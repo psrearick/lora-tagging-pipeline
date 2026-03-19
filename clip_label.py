@@ -19,24 +19,31 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 # Describe each bucket in plain language — more specific = better signal
 BUCKETS = {
     # LoRA 1 — Style + Density
-    "phstyle_bare":     "completely smooth shaved vulva with no pubic hair whatsoever",
-    "phstyle_stubble":  "very short stubble regrowth after shaving pubic area",
-    "phstyle_strip":    "narrow vertical landing strip of pubic hair centered above vulva",
-    "phstyle_trimmed":  "neatly trimmed short pubic hair keeping natural shape",
-    "phstyle_bush":     "full untrimmed natural ungroomed pubic hair",
-    "phdns_sparse":     "sparse thin low-density pubic hair with visible skin beneath",
-    "phdns_moderate":   "medium density pubic hair neither sparse nor thick",
-    "phdns_thick":      "thick dense full high-density pubic hair",
+    "phstyle_bare":       "completely smooth shaved vulva with no pubic hair whatsoever",
+    "phstyle_stubble":    "very short stubble regrowth after shaving pubic area",
+    "phstyle_strip":      "narrow vertical landing strip of pubic hair centered above vulva",
+    "phstyle_trimmed":    "neatly trimmed short pubic hair keeping natural shape",
+    "phstyle_bush":       "full untrimmed natural ungroomed pubic hair",
+    "phdns_sparse":       "sparse thin low-density pubic hair with visible skin beneath",
+    "phdns_moderate":     "medium density pubic hair neither sparse nor thick",
+    "phdns_thick":        "thick dense full high-density pubic hair",
     # LoRA 2 — Length
-    "phlen_stubble":    "pubic hair under three millimeters very close cropped",
-    "phlen_short":      "pubic hair three to eight millimeters short trimmed",
-    "phlen_medium":     "pubic hair eight to twenty millimeters medium length",
-    "phlen_long":       "pubic hair over twenty millimeters long natural growth",
+    "phlen_stubble":      "pubic hair under three millimeters very close cropped",
+    "phlen_short":        "pubic hair three to eight millimeters short trimmed",
+    "phlen_medium":       "pubic hair eight to twenty millimeters medium length",
+    "phlen_long":         "pubic hair over twenty millimeters long natural growth",
     # LoRA 3 — Texture
-    "phtex_straight":   "straight smooth pubic hair with no curl",
-    "phtex_wavy":       "gently wavy pubic hair slight curl pattern",
-    "phtex_curly":      "clearly curly pubic hair tight curl pattern",
-    "phtex_coily":      "tightly coiled kinky pubic hair very tight curl",
+    "phtex_straight":     "straight smooth pubic hair with no curl",
+    "phtex_wavy":         "gently wavy pubic hair slight curl pattern",
+    "phtex_curly":        "clearly curly pubic hair tight curl pattern",
+    "phtex_coily":        "tightly coiled kinky pubic hair very tight curl",
+    # LoRA 4 — Anatomy
+    "lmaj_flat":          "female genitalia with flat minimal outer labia majora close together low profile",
+    "lmaj_full":          "female genitalia with full prominent large outer labia majora high volume",
+    "lmin_tucked":        "female genitalia with inner labia minora completely tucked inside outer labia not visible",
+    "lmin_protruding":    "female genitalia with inner labia minora protruding extending visibly beyond outer labia",
+    "hood_covered":       "female genitalia with clitoral hood fully covering clitoris glans not visible at rest",
+    "hood_exposed":       "female genitalia with clitoral hood retracted minimal coverage clitoris glans visible",
 }
 
 def load_model():
