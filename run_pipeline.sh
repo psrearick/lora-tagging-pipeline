@@ -1,25 +1,23 @@
 #!/bin/bash
-# set -e
 
 echo "=== Downloading from Reddit ==="
 
-# gallery-dl "https://www.reddit.com/r/pussy/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/godpussy/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/landingstripnsfw/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/trimmedshavedbush/top/?t=all" --range 1-400  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/pussyaddicts/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/neatbush/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/PussiesCloseUp/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-# gallery-dl "https://www.reddit.com/r/PerfectPussy/top/?t=all" --range 1-300  \
-#     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
-
+gallery-dl "https://www.reddit.com/r/pussy/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/godpussy/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/landingstripnsfw/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/trimmedshavedbush/top/?t=all" --range 1-400  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/pussyaddicts/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/neatbush/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/PussiesCloseUp/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
+gallery-dl "https://www.reddit.com/r/PerfectPussy/top/?t=all" --range 1-300  \
+    --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
 gallery-dl "https://www.reddit.com/r/shavedpussies/top/?t=all" --range 1-300  \
     --filter "extension in ('jpg', 'jpeg', 'png', 'webp')"
 gallery-dl "https://www.reddit.com/r/tidybush/top/?t=all" --range 1-300  \
