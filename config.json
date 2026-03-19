@@ -1,0 +1,16 @@
+{
+    "extractor": {
+        "base-directory": "~/dataset/raw",
+        "reddit": {
+            "image-filter": "score > 100 and width >= 1000 and height >= 768",
+            "metadata": true,
+            "recursion": 0,
+            "directory": ["{subreddit}"],
+            "filename": "{score:>06}_{id}.{extension}"
+        }
+    },
+    "downloader": {
+        "part": false,
+        "retries": 3
+    }
+}
