@@ -31,7 +31,7 @@ AXIS_GROUPS = {
 ALL_TAGS = [tag for group in AXIS_GROUPS.values() for tag in group]
 
 # Minimum CLIP confidence for a tag to be assigned
-THRESHOLD = 0.40
+THRESHOLD = 0.20
 
 
 def assign_tags(scores: dict) -> list:

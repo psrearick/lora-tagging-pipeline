@@ -261,43 +261,102 @@ let saveTimer = null;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
+  const loadingEl = document.getElementById('loading');
+  const noDataEl  = document.getElementById('no-data');
+  const appEl     = document.getElementById('app');
+
+  function showError(msg) {
+    loadingEl.innerHTML = `
+      <div style="color:#ff5252;font-family:monospace;font-size:13px;padding:32px;max-width:700px">
+        <div style="font-size:15px;margin-bottom:12px">⚠ Failed to load</div>
+        <pre style="white-space:pre-wrap;color:#ff8a80">${msg}</pre>
+        <div style="margin-top:16px;color:#888">Check the browser console for full details.</div>
+      </div>`;
+  }
+
   try {
-    const res = await fetch('./data.json');
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    const lsRaw = localStorage.getItem('lora_review_state');
-    if (lsRaw) {
-      const lsParsed = JSON.parse(lsRaw);
-      if (lsParsed.lastModified > (data.lastModified || 0)) {
-        if (confirm('Found newer review progress in browser storage — load it instead of data.json?')) {
-          hydrate(lsParsed); return;
+    let data;
+    try {
+      const res = await fetch('./data.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status} fetching data.json`);
+      data = await res.json();
+      console.log('data.json loaded ok —', data.images?.length, 'images');
+    } catch(fetchErr) {
+      // fetch failed — try localStorage fallback
+      const lsRaw = localStorage.getItem('lora_review_state');
+      if (lsRaw) {
+        if (confirm('Could not fetch data.json. Load saved state from browser storage?')) {
+          data = JSON.parse(lsRaw);
+        } else {
+            loadingEl.style.display = 'none';
+            noDataEl.style.display  = 'flex';
+          return;
+        }
+      } else {
+        loadingEl.style.display = 'none';
+        noDataEl.style.display  = 'flex';
+        return;
+      }
+    }
+
+    // Check localStorage for newer version
+    try {
+      const lsRaw = localStorage.getItem('lora_review_state');
+      if (lsRaw) {
+        const lsParsed = JSON.parse(lsRaw);
+        if ((lsParsed.lastModified || 0) > (data.lastModified || 0)) {
+          if (confirm('Found newer review progress in browser storage — load it?')) {
+            data = lsParsed;
+          }
         }
       }
+    } catch(lsErr) {
+      console.warn('localStorage check failed (non-fatal):', lsErr);
     }
+
+    console.log('Hydrating...');
     hydrate(data);
-  } catch(e) {
-    const lsRaw = localStorage.getItem('lora_review_state');
-    if (lsRaw) {
-      if (confirm('Could not fetch data.json. Load saved state from browser storage?')) {
-        hydrate(JSON.parse(lsRaw)); return;
-      }
-    }
-    document.getElementById('loading').hidden = true;
-    document.getElementById('no-data').hidden = false;
+    console.log('Hydrate complete. Rendering...');
+
+  } catch(err) {
+    console.error('init failed:', err);
+    showError(err.stack || err.message || String(err));
   }
 }
 
 function hydrate(data) {
-  state = data;
-  state.lastModified = state.lastModified || 0;
-  tagAxis = {};
-  for (const [axis, tags] of Object.entries(state.axis_groups || {}))
-    for (const t of tags) tagAxis[t] = axis;
-  buildFilterOptions();
-  document.getElementById('loading').hidden = true;
-  document.getElementById('no-data').hidden  = true;
-  document.getElementById('app').hidden = false;
-  render();
+  try {
+    state = data;
+    state.lastModified = state.lastModified || 0;
+    tagAxis = {};
+    for (const [axis, tags] of Object.entries(state.axis_groups || {}))
+      for (const t of tags) tagAxis[t] = axis;
+
+    buildFilterOptions();
+
+document.getElementById('loading').style.display  = 'none';
+document.getElementById('no-data').style.display  = 'none';
+document.getElementById('app').style.display      = 'block';
+
+    // Yield thread so browser actually paints before we block it with render
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+    try { render(); }
+    catch(e) {
+        console.error('render failed:', e);
+        document.getElementById('app').innerHTML =
+        `<div style="color:#ff5252;font-family:monospace;padding:32px">
+            <b>Render error</b><br><br><pre>${e.stack || e.message}</pre>
+        </div>`;
+    }
+    }));
+  } catch(err) {
+    console.error('hydrate/render failed:', err);
+    document.getElementById('loading').innerHTML =
+      `<div style="color:#ff5252;font-family:monospace;padding:32px;max-width:700px">
+        <b>Render error</b><br><br>
+        <pre style="white-space:pre-wrap">${err.stack || err.message}</pre>
+      </div>`;
+  }
 }
 
 function loadFileData(file) {
@@ -515,10 +574,57 @@ function renderStats(images) {
   document.getElementById('stat-unrev').textContent = `? ${unrev} unreviewed`;
 }
 
+const PAGE_SIZE = 60;
+let currentImages = [];
+let renderedCount = 0;
+let sentinel = null;
+let observer = null;
+
 function renderGrid(images) {
   const grid = document.getElementById('grid');
-  if (!images.length) { grid.innerHTML = '<div id="grid-empty">No images match filters</div>'; return; }
-  grid.innerHTML = images.map(img => cardHTML(img)).join('');
+
+  // Tear down previous observer
+  if (observer) { observer.disconnect(); observer = null; }
+  if (sentinel) { sentinel.remove(); sentinel = null; }
+
+  currentImages = images;
+  renderedCount = 0;
+  grid.innerHTML = '';
+
+  if (!images.length) {
+    grid.innerHTML = '<div id="grid-empty">No images match filters</div>';
+    return;
+  }
+
+  renderNextChunk();
+
+  // Sentinel div at the bottom — when it scrolls into view, render more
+  sentinel = document.createElement('div');
+  sentinel.style.cssText = 'height:1px;width:100%';
+  grid.after(sentinel);
+
+  observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) renderNextChunk();
+  }, { rootMargin: '400px' });
+
+  observer.observe(sentinel);
+}
+
+function renderNextChunk() {
+  if (renderedCount >= currentImages.length) {
+    if (observer) { observer.disconnect(); observer = null; }
+    return;
+  }
+  const grid  = document.getElementById('grid');
+  const chunk = currentImages.slice(renderedCount, renderedCount + PAGE_SIZE);
+  const frag  = document.createDocumentFragment();
+  chunk.forEach(img => {
+    const div = document.createElement('div');
+    div.innerHTML = cardHTML(img);
+    frag.appendChild(div.firstElementChild);
+  });
+  grid.appendChild(frag);
+  renderedCount += chunk.length;
 }
 
 function cardHTML(img) {
