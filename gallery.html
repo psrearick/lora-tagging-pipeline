@@ -18,6 +18,7 @@
 html,body{height:100%;background:var(--bg0);color:var(--text1);font-family:var(--sans);font-size:14px;overflow-x:hidden}
 button{font-family:var(--sans);cursor:pointer;border:none;outline:none}
 input,select{font-family:var(--sans);outline:none}
+[hidden] {display: none !important;}
 
 /* ─── HEADER ─── */
 #header{position:sticky;top:0;z-index:100;background:var(--bg1);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -288,13 +289,13 @@ async function init() {
         if (confirm('Could not fetch data.json. Load saved state from browser storage?')) {
           data = JSON.parse(lsRaw);
         } else {
-            loadingEl.style.display = 'none';
-            noDataEl.style.display  = 'flex';
+        loadingEl.hidden = true;
+        noDataEl.hidden  = false;
           return;
         }
       } else {
-        loadingEl.style.display = 'none';
-        noDataEl.style.display  = 'flex';
+        loadingEl.hidden = true;
+        noDataEl.hidden  = false;
         return;
       }
     }
@@ -334,9 +335,9 @@ function hydrate(data) {
 
     buildFilterOptions();
 
-document.getElementById('loading').style.display  = 'none';
-document.getElementById('no-data').style.display  = 'none';
-document.getElementById('app').style.display      = 'block';
+    document.getElementById('loading').hidden = true;
+    document.getElementById('no-data').hidden  = true;
+    document.getElementById('app').hidden = false;
 
     // Yield thread so browser actually paints before we block it with render
     requestAnimationFrame(() => requestAnimationFrame(() => {
