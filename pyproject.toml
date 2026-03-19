@@ -1,6 +1,14 @@
 [project]
-requires-python = ">=3.14"
+requires-python = ">=3.12,<3.13"
+name="gallery-dl"
 dependencies = [
+    "torch (>=2.10.0,<3.0.0)",
+    "torchvision (>=0.25.0,<0.26.0)",
+    "ftfy (>=6.3.1,<7.0.0)",
+    "regex (>=2026.2.28,<2027.0.0)",
+    "open-clip-torch (>=3.3.0,<4.0.0)",
+    "pillow (>=12.1.1,<13.0.0)",
+    "imagededup (>=0.3.3.post2,<0.4.0)"
 ]
 
 [tool.poetry]
