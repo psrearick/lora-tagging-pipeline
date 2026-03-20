@@ -50,11 +50,15 @@ function start() {
 function review() {
     start
     wait 2
-    open
+    open_gallery
 }
 
 function export_training() {
-    echo ""
+    if [[ -v LORA_CONFIG ]]; then
+        poetry run python "$CUR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
+    else
+        poetry run python "$CUR/export_training.py" "$DEST/training" --group-by-lora
+    fi
 }
 
 function update_gallery() {
@@ -101,6 +105,10 @@ case "$1" in
     generate)
         shift
         generate
+        ;;
+    open)
+        shift
+        open_gallery
         ;;
     review)
         shift
