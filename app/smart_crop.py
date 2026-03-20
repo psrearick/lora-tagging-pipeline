@@ -75,7 +75,7 @@ def main():
     ok = skipped = errors = 0
 
     for i, src in enumerate(images):
-        # Preserve subfolder structure (subreddit buckets)
+        # Preserve subfolder structure (source buckets)
         rel     = src.relative_to(input_dir)
         dest    = output_dir / rel.with_suffix(".png")
         dest.parent.mkdir(parents=True, exist_ok=True)

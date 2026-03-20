@@ -4,13 +4,13 @@ Usage:
     from config_loader import load_config
     cfg = load_config("lora_config.json")
 
-    cfg.all_tags          → ["phstyle_bare", ...]
-    cfg.axis_groups       → {"style": ["phstyle_bare", ...], ...}
-    cfg.descriptions      → {"phstyle_bare": "completely smooth...", ...}
-    cfg.synonyms          → {"phstyle_bare": ["bare", "shaved", ...], ...}
-    cfg.display_name(tag) → "bare"   (first synonym)
-    cfg.tag_to_lora       → {"phstyle_bare": "lora1_style_density", ...}
-    cfg.loras             → {"lora1_style_density": ["style", "density"], ...}
+    cfg.all_tags          → ["axis1_tag1", ...]
+    cfg.axis_groups       → {"axis1": ["axis1_tag1", ...], ...}
+    cfg.descriptions      → {"axis1_tag1": "description text...", ...}
+    cfg.synonyms          → {"axis1_tag1": ["label", "synonym", ...], ...}
+    cfg.display_name(tag) → "label"  (first synonym)
+    cfg.tag_to_lora       → {"axis1_tag1": "lora1_name", ...}
+    cfg.loras             → {"lora1_name": ["axis1", "axis2"], ...}
     cfg.threshold         → 0.40
     cfg.clip_model        → "ViT-B-32"
     cfg.target_size       → 1024

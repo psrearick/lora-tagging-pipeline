@@ -903,9 +903,9 @@
         <button class="fstatus-btn" data-status="selected">Selected</button>
         <button class="fstatus-btn" data-status="rejected">Rejected</button>
       </div>
-      <label>Sub</label>
+      <label>Source</label>
       <select class="fsel" id="sub-filter">
-        <option value="all">All subreddits</option>
+        <option value="all">All sources</option>
       </select>
       <label>Tag</label>
       <select class="fsel" id="tag-filter">
@@ -978,7 +978,7 @@
     let state = null;
     let TAG_DISPLAY = {};
     let tagAxis = {};      // tag → axis group name
-    let filters = { status: 'all', subreddit: 'all', tag: 'all', search: '' };
+    let filters = { status: 'all', source: 'all', tag: 'all', search: '' };
     let lbId = null;    // active lightbox image id
     let lbIds = [];      // current filtered ids for lb nav
     let saveTimer = null;
@@ -1174,8 +1174,8 @@
     // ─── FILTER ───────────────────────────────────────────────────────────────────
     function buildFilterOptions() {
       const subSel = document.getElementById('sub-filter');
-      subSel.innerHTML = '<option value="all">All subreddits</option>';
-      (state.subreddits || []).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
+      subSel.innerHTML = '<option value="all">All sources</option>';
+      (state.sources || []).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
 
       const tagSel = document.getElementById('tag-filter');
       tagSel.innerHTML = '<option value="all">Any tag</option>';
@@ -1189,7 +1189,7 @@
           render();
         }));
 
-      subSel.addEventListener('change', () => { filters.subreddit = subSel.value; render(); });
+      subSel.addEventListener('change', () => { filters.source = subSel.value; render(); });
       document.getElementById('tag-filter').addEventListener('change', () => { filters.tag = document.getElementById('tag-filter').value; render(); });
       document.getElementById('search-input').addEventListener('input', e => { filters.search = e.target.value.toLowerCase(); render(); });
     }
@@ -1197,7 +1197,7 @@
     function getFilteredImages() {
       return (state.images || []).filter(img => {
         if (filters.status !== 'all' && img.status !== filters.status) return false;
-        if (filters.subreddit !== 'all' && img.subreddit !== filters.subreddit) return false;
+        if (filters.source !== 'all' && img.source !== filters.source) return false;
         if (filters.tag !== 'all' && !img.tags.includes(filters.tag)) return false;
         if (filters.search && !img.path.toLowerCase().includes(filters.search)) return false;
         return true;
@@ -1375,7 +1375,7 @@
     </div>
     <div class="card-status-bar ${img.status}"></div>
     <div class="card-body">
-      <div class="card-meta" title="${img.path}">${img.subreddit} · ${img.path.split('/').pop()}</div>
+      <div class="card-meta" title="${img.path}">${img.source} · ${img.path.split('/').pop()}</div>
       <div class="status-btns">
         <button class="sbtn${img.status === 'selected' ? ' active-sel' : ''}" onclick="setStatus(${img.id},'selected')">✓</button>
         <button class="sbtn${img.status === 'unreviewed' ? ' active-unrev' : ''}" onclick="setStatus(${img.id},'unreviewed')">?</button>

@@ -8,7 +8,7 @@ Usage:
 
     # Score only new tags, merge into existing
     python3 clip_label.py ~/dataset/sorted/accepted ~/dataset/clip_labels.json \
-        --tags pos_standing pos_sitting --update
+        --tags tag_one tag_two --update
 
     # Use a different config file
     python3 clip_label.py ~/dataset/sorted/accepted ~/dataset/clip_labels.json \
@@ -126,7 +126,7 @@ def main():
             top_bucket = max(new_scores, key=lambda k: new_scores.get(k) or 0 if new_scores else 0)
             results.append({
                 "path":       rel_path,
-                "subreddit":  img_path.parent.name,
+                "source":     img_path.parent.name,
                 "top_bucket": top_bucket,
                 "top_score":  new_scores[top_bucket],
                 "scores":     new_scores,

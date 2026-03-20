@@ -68,10 +68,10 @@ def main():
         data["axis_groups"]  = cfg.axis_groups
         data["tag_synonyms"] = cfg.synonyms
 
-        existing_subs = set(data.get("subreddits", []))
+        existing_sources = set(data.get("sources", []))
         for entry in clip_results:
-            existing_subs.add(entry.get("subreddit", "unknown"))
-        data["subreddits"] = sorted(existing_subs)
+            existing_sources.add(entry.get("source", "unknown"))
+        data["sources"] = sorted(existing_sources)
 
         existing_paths = {img["path"] for img in data["images"]}
         updated = added = skipped = 0
@@ -95,7 +95,7 @@ def main():
             data["images"].append({
                 "id":          max_id,
                 "path":        rel_path,
-                "subreddit":   entry.get("subreddit", "unknown"),
+                "source":      entry.get("source", "unknown"),
                 "clip_scores": entry.get("scores", {}),
                 "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
                 "status":      "unreviewed",
@@ -106,20 +106,20 @@ def main():
         print(f"  Updated: {updated}  Added: {added}  Skipped: {skipped}")
 
     else:
-        images     = []
-        subreddits = set()
+        images  = []
+        sources = set()
         for i, entry in enumerate(clip_results):
             abs_path = Path(entry["path"])
             try:
                 rel_path = str(abs_path.relative_to(base_dir))
             except ValueError:
                 rel_path = str(abs_path)
-            subreddit = entry.get("subreddit", "unknown")
-            subreddits.add(subreddit)
+            source = entry.get("source", "unknown")
+            sources.add(source)
             images.append({
                 "id":          i,
                 "path":        rel_path,
-                "subreddit":   subreddit,
+                "source":      source,
                 "clip_scores": entry.get("scores", {}),
                 "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
                 "status":      "unreviewed",
@@ -130,7 +130,7 @@ def main():
             "all_tags":     cfg.all_tags,
             "axis_groups":  cfg.axis_groups,
             "tag_synonyms": cfg.synonyms,
-            "subreddits":   sorted(subreddits),
+            "sources":      sorted(sources),
             "lastModified": 0,
             "images":       images,
         }

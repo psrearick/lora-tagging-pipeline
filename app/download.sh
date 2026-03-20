@@ -6,19 +6,22 @@ cd "$DIR"
 
 source "$1"
 
-for sub in "${SUBREDDITS[@]}"; do
+for src in "${SOURCES[@]}"; do
     echo "========================================="
-    echo "Downloading: $sub/$SORT"
+    echo "Downloading: $src ($SORT)"
     echo "========================================="
+
+    url="${DOWNLOAD_URL_TEMPLATE/\{source\}/$src}"
+    url="${url/\{sort\}/$SORT}"
 
     gallery-dl \
         --download-archive "$ARCHIVE" \
         --destination "$DEST/raw" \
-        --config "$DIR/$GALLERY_CONF" \
+        --config "$GALLERY_CONF" \
         --range "$START-$END" \
         --chapter-range "$START-$END" \
         --filter "extension in ('jpg', 'jpeg', 'png', 'webp')" \
-        "https://www.reddit.com/r/$sub/$SORT"
+        "$url"
 done
 
 echo ""
