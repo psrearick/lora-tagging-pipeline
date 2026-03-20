@@ -1,643 +1,1375 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LoRA Dataset Reviewer</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg0:#0a0a0d; --bg1:#111118; --bg2:#1a1a22; --bg3:#252535;
-  --border:#2d2d3d; --border2:#3d3d55;
-  --text1:#e2e2f0; --text2:#9090b0; --text3:#555570;
-  --accent:#4fc3f7; --sel:#00e676; --rej:#ff5252; --warn:#ffb74d;
-  --tag-bg:rgba(79,195,247,0.1); --tag-text:#4fc3f7;
-  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg0);color:var(--text1);font-family:var(--sans);font-size:14px;overflow-x:hidden}
-button{font-family:var(--sans);cursor:pointer;border:none;outline:none}
-input,select{font-family:var(--sans);outline:none}
-[hidden] {display: none !important;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoRA Dataset Reviewer</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg0: #0a0a0d;
+      --bg1: #111118;
+      --bg2: #1a1a22;
+      --bg3: #252535;
+      --border: #2d2d3d;
+      --border2: #3d3d55;
+      --text1: #e2e2f0;
+      --text2: #9090b0;
+      --text3: #555570;
+      --accent: #4fc3f7;
+      --sel: #00e676;
+      --rej: #ff5252;
+      --warn: #ffb74d;
+      --tag-bg: rgba(79, 195, 247, 0.1);
+      --tag-text: #4fc3f7;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
 
-/* ─── HEADER ─── */
-#header{position:sticky;top:0;z-index:100;background:var(--bg1);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-#header h1{font-size:15px;font-weight:600;letter-spacing:.04em;white-space:nowrap;color:var(--text1)}
-#header h1 span{color:var(--accent)}
-#stats{display:flex;gap:8px;flex:1;flex-wrap:wrap}
-.stat-pill{padding:4px 10px;border-radius:20px;font-size:12px;font-family:var(--mono);border:1px solid var(--border);background:var(--bg2)}
-.stat-pill.sel{border-color:rgba(0,230,118,.4);color:var(--sel)}
-.stat-pill.rej{border-color:rgba(255,82,82,.4);color:var(--rej)}
-.stat-pill.unrev{color:var(--text2)}
-#header-btns{display:flex;gap:8px;flex-shrink:0}
-.hbtn{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;transition:opacity .15s}
-.hbtn.primary{background:var(--accent);color:#0a0a0d}
-.hbtn.primary:hover{opacity:.85}
-.hbtn.secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
-.hbtn.secondary:hover{color:var(--text1);border-color:var(--border2)}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* ─── FILTER BAR ─── */
-#filter-bar{background:var(--bg1);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-#filter-bar label{font-size:12px;color:var(--text3);font-family:var(--mono)}
-select.fsel,input.fsearch{background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:5px 8px;border-radius:5px;font-size:12px}
-select.fsel:hover,input.fsearch:hover{border-color:var(--border2)}
-input.fsearch{width:180px}
-.filter-status{display:flex;gap:4px}
-.fstatus-btn{padding:4px 10px;border-radius:5px;font-size:12px;background:var(--bg2);border:1px solid var(--border);color:var(--text2)}
-.fstatus-btn.active{border-color:var(--accent);color:var(--accent)}
-.bulk-btns{display:flex;gap:6px;margin-left:auto}
-.bulk-btn{padding:4px 10px;border-radius:5px;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2)}
-.bulk-btn:hover{color:var(--text1)}
+    html,
+    body {
+      height: 100%;
+      background: var(--bg0);
+      color: var(--text1);
+      font-family: var(--sans);
+      font-size: 14px;
+      overflow-x: hidden
+    }
 
-/* ─── MATRIX ─── */
-#matrix-section{border-bottom:1px solid var(--border)}
-#matrix-toggle-btn{width:100%;padding:9px 16px;background:var(--bg1);color:var(--text2);text-align:left;font-size:12px;font-family:var(--mono);border:none;cursor:pointer;display:flex;align-items:center;gap:6px}
-#matrix-toggle-btn:hover{color:var(--text1)}
-#matrix-toggle-btn::before{content:'▶';font-size:10px;transition:transform .2s}
-#matrix-toggle-btn.open::before{transform:rotate(90deg)}
-#matrices{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
-.matrix-panel{background:var(--bg0);overflow:auto;padding:12px 16px}
-.matrix-panel h3{font-size:12px;font-family:var(--mono);color:var(--text2);margin-bottom:10px;font-weight:500}
-.matrix-table{border-collapse:collapse;font-family:var(--mono);font-size:11px}
-.mth-corner{min-width:130px}
-.mth-col{min-width:28px;max-width:28px;height:115px;vertical-align:bottom;position:relative;padding-bottom:3px}
-.mth-col div{transform:rotate(-45deg) translateX(-16px);transform-origin:left bottom;white-space:nowrap;font-size:10px;color:var(--text2);width:120px;overflow:hidden;text-overflow:ellipsis}
-.mtr-label{padding:3px 8px 3px 0;white-space:nowrap;font-size:11px;color:var(--text2);text-align:right;position:sticky;left:0;background:var(--bg0);z-index:1}
-.mcell{min-width:28px;max-width:28px;height:28px;text-align:center;cursor:default;border:1px solid rgba(45,45,61,.5)}
-.mcell:hover{border-color:var(--accent);z-index:2;position:relative}
-.mcell-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:9px;line-height:1.2}
-.mcell-count{font-size:10px;font-weight:500;color:var(--text1)}
-.mcell-pct{font-size:8px;color:var(--text2)}
-.mcell-diag .mcell-count{color:var(--text3)}
+    button {
+      font-family: var(--sans);
+      cursor: pointer;
+      border: none;
+      outline: none
+    }
 
-/* ─── GRID ─── */
-#grid{padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-#grid-empty{padding:60px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:13px}
+    input,
+    select {
+      font-family: var(--sans);
+      outline: none
+    }
 
-/* ─── CARD ─── */
-.card{background:var(--bg2);border-radius:8px;overflow:hidden;border:2px solid transparent;transition:border-color .15s;display:flex;flex-direction:column}
-.card.status-selected{border-color:rgba(0,230,118,.5)}
-.card.status-rejected{border-color:rgba(255,82,82,.35);opacity:.65}
-.card:hover{border-color:var(--border2)}
-.card.status-selected:hover{border-color:var(--sel)}
-.card-img-wrap{position:relative;height:200px;background:var(--bg3);overflow:hidden;cursor:pointer}
-.card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
-.card-img-wrap:hover img{transform:scale(1.04)}
-.card-status-bar{height:3px;flex-shrink:0}
-.card-status-bar.selected{background:var(--sel)}
-.card-status-bar.rejected{background:var(--rej)}
-.card-status-bar.unreviewed{background:var(--border)}
-.card-body{padding:8px;display:flex;flex-direction:column;gap:6px;flex:1}
-.card-meta{font-size:10px;color:var(--text3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.status-btns{display:flex;gap:4px}
-.sbtn{flex:1;padding:4px 0;border-radius:4px;font-size:11px;font-weight:500;background:var(--bg3);color:var(--text3);border:1px solid var(--border);transition:all .12s}
-.sbtn:hover{border-color:var(--border2);color:var(--text2)}
-.sbtn.active-sel{background:rgba(0,230,118,.15);color:var(--sel);border-color:rgba(0,230,118,.4)}
-.sbtn.active-rej{background:rgba(255,82,82,.12);color:var(--rej);border-color:rgba(255,82,82,.35)}
-.sbtn.active-unrev{background:rgba(144,144,176,.1);color:var(--text2);border-color:var(--border2)}
-.tags-area{display:flex;flex-wrap:wrap;gap:4px;min-height:20px}
-.tag-pill{display:inline-flex;align-items:center;gap:3px;background:var(--tag-bg);border:1px solid rgba(79,195,247,.2);border-radius:3px;padding:2px 5px;font-size:10px;font-family:var(--mono);color:var(--tag-text)}
-.tag-rm{background:none;color:rgba(79,195,247,.5);font-size:12px;line-height:1;padding:0 1px}
-.tag-rm:hover{color:var(--rej)}
-.add-tag-btn{background:none;border:1px dashed var(--border2);border-radius:3px;padding:2px 6px;font-size:10px;color:var(--text3);cursor:pointer}
-.add-tag-btn:hover{color:var(--accent);border-color:var(--accent)}
-.scores-toggle{font-size:10px;color:var(--text3);cursor:pointer;background:none;text-align:left;font-family:var(--mono)}
-.scores-toggle:hover{color:var(--text2)}
-.scores-list{display:none;flex-direction:column;gap:2px;margin-top:2px}
-.scores-list.open{display:flex}
-.score-row{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono)}
-.score-name{color:var(--text3)}
-.score-val{color:var(--text2)}
-.score-val.top{color:var(--accent)}
+    [hidden] {
+      display: none !important;
+    }
 
-/* ─── LIGHTBOX ─── */
-#lightbox{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.92);display:flex;align-items:stretch}
-#lb-img-area{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;padding:20px}
-#lb-img-area img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
-#lb-sidebar{width:280px;flex-shrink:0;background:var(--bg1);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
-#lb-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-#lb-close{background:none;color:var(--text2);font-size:20px;line-height:1;padding:2px 6px}
-#lb-close:hover{color:var(--text1)}
-#lb-nav{display:flex;gap:6px;align-items:center}
-.lb-nav-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:5px;font-size:13px}
-.lb-nav-btn:hover{color:var(--text1)}
-#lb-counter{font-size:11px;font-family:var(--mono);color:var(--text3)}
-#lb-body{padding:14px;display:flex;flex-direction:column;gap:12px;flex:1}
-#lb-path{font-size:10px;font-family:var(--mono);color:var(--text3);word-break:break-all;line-height:1.4}
-#lb-status-btns{display:flex;gap:6px}
-#lb-status-btns .sbtn{font-size:12px;padding:6px 0}
-#lb-tags-label{font-size:11px;color:var(--text2);font-family:var(--mono)}
-#lb-tags-area{display:flex;flex-wrap:wrap;gap:5px}
-#lb-scores{display:flex;flex-direction:column;gap:3px}
-#lb-scores-label{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:4px}
-.lb-score-row{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono)}
-.lb-score-row .sn{color:var(--text3)} .lb-score-row .sv{color:var(--text2)} .lb-score-row .sv.hi{color:var(--accent)}
-#lb-shortcuts{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);font-size:10px;font-family:var(--mono);color:var(--text3);line-height:1.7}
+    /* ─── HEADER ─── */
+    #header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap
+    }
 
-/* ─── TAG DROPDOWN ─── */
-#tag-dropdown{position:fixed;z-index:600;background:var(--bg1);border:1px solid var(--border2);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:180px;max-height:260px;overflow-y:auto;padding:4px}
-.td-item{padding:5px 10px;border-radius:4px;font-size:11px;font-family:var(--mono);cursor:pointer;color:var(--text2)}
-.td-item:hover{background:var(--bg3);color:var(--accent)}
-.td-axis{padding:4px 10px 2px;font-size:9px;color:var(--text3);font-weight:600;letter-spacing:.06em}
+    #header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      white-space: nowrap;
+      color: var(--text1)
+    }
 
-/* ─── LOADING / NO-DATA ─── */
-#loading,#no-data{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--text2);font-family:var(--mono);font-size:13px}
-#no-data code{background:var(--bg2);padding:10px 16px;border-radius:6px;font-size:12px;color:var(--accent);line-height:1.7;display:block}
-.load-file-area{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px;border:2px dashed var(--border2);border-radius:10px;margin-top:8px;cursor:pointer;transition:border-color .15s}
-.load-file-area:hover,.load-file-area.drag-over{border-color:var(--accent)}
-.load-file-area p{font-size:12px;color:var(--text3)}
+    #header h1 span {
+      color: var(--accent)
+    }
 
-/* ─── TOAST ─── */
-#toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--bg1);border:1px solid var(--border2);border-radius:6px;padding:8px 14px;font-size:12px;font-family:var(--mono);color:var(--text2);pointer-events:none;opacity:0;transition:opacity .2s}
-#toast.show{opacity:1}
-</style>
+    #stats {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      flex-wrap: wrap
+    }
+
+    .stat-pill {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--mono);
+      border: 1px solid var(--border);
+      background: var(--bg2)
+    }
+
+    .stat-pill.sel {
+      border-color: rgba(0, 230, 118, .4);
+      color: var(--sel)
+    }
+
+    .stat-pill.rej {
+      border-color: rgba(255, 82, 82, .4);
+      color: var(--rej)
+    }
+
+    .stat-pill.unrev {
+      color: var(--text2)
+    }
+
+    #header-btns {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0
+    }
+
+    .hbtn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: opacity .15s
+    }
+
+    .hbtn.primary {
+      background: var(--accent);
+      color: #0a0a0d
+    }
+
+    .hbtn.primary:hover {
+      opacity: .85
+    }
+
+    .hbtn.secondary {
+      background: var(--bg3);
+      color: var(--text2);
+      border: 1px solid var(--border)
+    }
+
+    .hbtn.secondary:hover {
+      color: var(--text1);
+      border-color: var(--border2)
+    }
+
+    /* ─── FILTER BAR ─── */
+    #filter-bar {
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    #filter-bar label {
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono)
+    }
+
+    select.fsel,
+    input.fsearch {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text1);
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-size: 12px
+    }
+
+    select.fsel:hover,
+    input.fsearch:hover {
+      border-color: var(--border2)
+    }
+
+    input.fsearch {
+      width: 180px
+    }
+
+    .filter-status {
+      display: flex;
+      gap: 4px
+    }
+
+    .fstatus-btn {
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text2)
+    }
+
+    .fstatus-btn.active {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .bulk-btns {
+      display: flex;
+      gap: 6px;
+      margin-left: auto
+    }
+
+    .bulk-btn {
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text2)
+    }
+
+    .bulk-btn:hover {
+      color: var(--text1)
+    }
+
+    /* ─── MATRIX ─── */
+    #matrix-section {
+      border-bottom: 1px solid var(--border)
+    }
+
+    #matrix-toggle-btn {
+      width: 100%;
+      padding: 9px 16px;
+      background: var(--bg1);
+      color: var(--text2);
+      text-align: left;
+      font-size: 12px;
+      font-family: var(--mono);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    #matrix-toggle-btn:hover {
+      color: var(--text1)
+    }
+
+    #matrix-toggle-btn::before {
+      content: '▶';
+      font-size: 10px;
+      transition: transform .2s
+    }
+
+    #matrix-toggle-btn.open::before {
+      transform: rotate(90deg)
+    }
+
+    #matrices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border)
+    }
+
+    .matrix-panel {
+      background: var(--bg0);
+      overflow: auto;
+      padding: 12px 16px
+    }
+
+    .matrix-panel h3 {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text2);
+      margin-bottom: 10px;
+      font-weight: 500
+    }
+
+    .matrix-table {
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 11px
+    }
+
+    .mth-corner {
+      min-width: 130px
+    }
+
+    .mth-col {
+      min-width: 28px;
+      max-width: 28px;
+      height: 115px;
+      vertical-align: bottom;
+      position: relative;
+      padding-bottom: 3px
+    }
+
+    .mth-col div {
+      transform: rotate(-45deg) translateX(-16px);
+      transform-origin: left bottom;
+      white-space: nowrap;
+      font-size: 10px;
+      color: var(--text2);
+      width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .mtr-label {
+      padding: 3px 8px 3px 0;
+      white-space: nowrap;
+      font-size: 11px;
+      color: var(--text2);
+      text-align: right;
+      position: sticky;
+      left: 0;
+      background: var(--bg0);
+      z-index: 1
+    }
+
+    .mcell {
+      min-width: 28px;
+      max-width: 28px;
+      height: 28px;
+      text-align: center;
+      cursor: default;
+      border: 1px solid rgba(45, 45, 61, .5)
+    }
+
+    .mcell:hover {
+      border-color: var(--accent);
+      z-index: 2;
+      position: relative
+    }
+
+    .mcell-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 9px;
+      line-height: 1.2
+    }
+
+    .mcell-count {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text1)
+    }
+
+    .mcell-pct {
+      font-size: 8px;
+      color: var(--text2)
+    }
+
+    .mcell-diag .mcell-count {
+      color: var(--text3)
+    }
+
+    /* ─── GRID ─── */
+    #grid {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px
+    }
+
+    #grid-empty {
+      padding: 60px;
+      text-align: center;
+      color: var(--text3);
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--bg2);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color .15s;
+      display: flex;
+      flex-direction: column
+    }
+
+    .card.status-selected {
+      border-color: rgba(0, 230, 118, .5)
+    }
+
+    .card.status-rejected {
+      border-color: rgba(255, 82, 82, .35);
+      opacity: .65
+    }
+
+    .card:hover {
+      border-color: var(--border2)
+    }
+
+    .card.status-selected:hover {
+      border-color: var(--sel)
+    }
+
+    .card-img-wrap {
+      position: relative;
+      height: 200px;
+      background: var(--bg3);
+      overflow: hidden;
+      cursor: pointer
+    }
+
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .2s
+    }
+
+    .card-img-wrap:hover img {
+      transform: scale(1.04)
+    }
+
+    .card-status-bar {
+      height: 3px;
+      flex-shrink: 0
+    }
+
+    .card-status-bar.selected {
+      background: var(--sel)
+    }
+
+    .card-status-bar.rejected {
+      background: var(--rej)
+    }
+
+    .card-status-bar.unreviewed {
+      background: var(--border)
+    }
+
+    .card-body {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1
+    }
+
+    .card-meta {
+      font-size: 10px;
+      color: var(--text3);
+      font-family: var(--mono);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .status-btns {
+      display: flex;
+      gap: 4px
+    }
+
+    .sbtn {
+      flex: 1;
+      padding: 4px 0;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--bg3);
+      color: var(--text3);
+      border: 1px solid var(--border);
+      transition: all .12s
+    }
+
+    .sbtn:hover {
+      border-color: var(--border2);
+      color: var(--text2)
+    }
+
+    .sbtn.active-sel {
+      background: rgba(0, 230, 118, .15);
+      color: var(--sel);
+      border-color: rgba(0, 230, 118, .4)
+    }
+
+    .sbtn.active-rej {
+      background: rgba(255, 82, 82, .12);
+      color: var(--rej);
+      border-color: rgba(255, 82, 82, .35)
+    }
+
+    .sbtn.active-unrev {
+      background: rgba(144, 144, 176, .1);
+      color: var(--text2);
+      border-color: var(--border2)
+    }
+
+    .tags-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 20px
+    }
+
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--tag-bg);
+      border: 1px solid rgba(79, 195, 247, .2);
+      border-radius: 3px;
+      padding: 2px 5px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--tag-text)
+    }
+
+    .tag-rm {
+      background: none;
+      color: rgba(79, 195, 247, .5);
+      font-size: 12px;
+      line-height: 1;
+      padding: 0 1px
+    }
+
+    .tag-rm:hover {
+      color: var(--rej)
+    }
+
+    .add-tag-btn {
+      background: none;
+      border: 1px dashed var(--border2);
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer
+    }
+
+    .add-tag-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .scores-toggle {
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      background: none;
+      text-align: left;
+      font-family: var(--mono)
+    }
+
+    .scores-toggle:hover {
+      color: var(--text2)
+    }
+
+    .scores-list {
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 2px
+    }
+
+    .scores-list.open {
+      display: flex
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      font-family: var(--mono)
+    }
+
+    .score-name {
+      color: var(--text3)
+    }
+
+    .score-val {
+      color: var(--text2)
+    }
+
+    .score-val.top {
+      color: var(--accent)
+    }
+
+    /* ─── LIGHTBOX ─── */
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0, 0, 0, .92);
+      display: flex;
+      align-items: stretch
+    }
+
+    #lb-img-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      padding: 20px
+    }
+
+    #lb-img-area img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px
+    }
+
+    #lb-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--bg1);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto
+    }
+
+    #lb-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    #lb-close {
+      background: none;
+      color: var(--text2);
+      font-size: 20px;
+      line-height: 1;
+      padding: 2px 6px
+    }
+
+    #lb-close:hover {
+      color: var(--text1)
+    }
+
+    #lb-nav {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    .lb-nav-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 13px
+    }
+
+    .lb-nav-btn:hover {
+      color: var(--text1)
+    }
+
+    #lb-counter {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text3)
+    }
+
+    #lb-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1
+    }
+
+    #lb-path {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text3);
+      word-break: break-all;
+      line-height: 1.4
+    }
+
+    #lb-status-btns {
+      display: flex;
+      gap: 6px
+    }
+
+    #lb-status-btns .sbtn {
+      font-size: 12px;
+      padding: 6px 0
+    }
+
+    #lb-tags-label {
+      font-size: 11px;
+      color: var(--text2);
+      font-family: var(--mono)
+    }
+
+    #lb-tags-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px
+    }
+
+    #lb-scores {
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    #lb-scores-label {
+      font-size: 11px;
+      color: var(--text2);
+      font-family: var(--mono);
+      margin-top: 4px
+    }
+
+    .lb-score-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-family: var(--mono)
+    }
+
+    .lb-score-row .sn {
+      color: var(--text3)
+    }
+
+    .lb-score-row .sv {
+      color: var(--text2)
+    }
+
+    .lb-score-row .sv.hi {
+      color: var(--accent)
+    }
+
+    #lb-shortcuts {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text3);
+      line-height: 1.7
+    }
+
+    /* ─── TAG DROPDOWN ─── */
+    #tag-dropdown {
+      position: fixed;
+      z-index: 600;
+      background: var(--bg1);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+      min-width: 180px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 4px
+    }
+
+    .td-item {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      color: var(--text2)
+    }
+
+    .td-item:hover {
+      background: var(--bg3);
+      color: var(--accent)
+    }
+
+    .td-axis {
+      padding: 4px 10px 2px;
+      font-size: 9px;
+      color: var(--text3);
+      font-weight: 600;
+      letter-spacing: .06em
+    }
+
+    /* ─── LOADING / NO-DATA ─── */
+    #loading,
+    #no-data {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 13px
+    }
+
+    #no-data code {
+      background: var(--bg2);
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--accent);
+      line-height: 1.7;
+      display: block
+    }
+
+    .load-file-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 24px;
+      border: 2px dashed var(--border2);
+      border-radius: 10px;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: border-color .15s
+    }
+
+    .load-file-area:hover,
+    .load-file-area.drag-over {
+      border-color: var(--accent)
+    }
+
+    .load-file-area p {
+      font-size: 12px;
+      color: var(--text3)
+    }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      background: var(--bg1);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text2);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    #toast.show {
+      opacity: 1
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="loading"><div>Loading data.json…</div></div>
-
-<div id="no-data" hidden>
-  <div style="font-size:15px;color:var(--text1);font-weight:600">LoRA Dataset Reviewer</div>
-  <div>Couldn't fetch data.json automatically.</div>
-  <code>cd ~/dataset<br>python3 -m http.server 8000<br>open http://localhost:8000/gallery.html</code>
-  <div style="color:var(--text3)">— or manually load your data.json below —</div>
-  <div class="load-file-area" id="drop-zone">
-    <div style="font-size:22px">📂</div>
-    <div style="color:var(--text1)">Drop data.json here</div>
-    <p>or click to browse</p>
+  <div id="loading">
+    <div>Loading data.json…</div>
   </div>
-</div>
 
-<div id="app" hidden>
-  <div id="header">
-    <h1>LoRA <span>Dataset Reviewer</span></h1>
-    <div id="stats">
-      <span class="stat-pill" id="stat-total"></span>
-      <span class="stat-pill sel" id="stat-sel"></span>
-      <span class="stat-pill rej" id="stat-rej"></span>
-      <span class="stat-pill unrev" id="stat-unrev"></span>
-    </div>
-    <div id="header-btns">
-      <button class="hbtn secondary" onclick="triggerFileInput()">Load file</button>
-      <button class="hbtn primary" onclick="exportData()">Export JSON</button>
+  <div id="no-data" hidden>
+    <div style="font-size:15px;color:var(--text1);font-weight:600">LoRA Dataset Reviewer</div>
+    <div>Couldn't fetch data.json automatically.</div>
+    <code>cd ~/dataset<br>python3 -m http.server 8000<br>open http://localhost:8000/gallery.html</code>
+    <div style="color:var(--text3)">— or manually load your data.json below —</div>
+    <div class="load-file-area" id="drop-zone">
+      <div style="font-size:22px">📂</div>
+      <div style="color:var(--text1)">Drop data.json here</div>
+      <p>or click to browse</p>
     </div>
   </div>
 
-  <div id="filter-bar">
-    <label>Status</label>
-    <div class="filter-status" id="status-filter">
-      <button class="fstatus-btn active" data-status="all">All</button>
-      <button class="fstatus-btn" data-status="unreviewed">Unreviewed</button>
-      <button class="fstatus-btn" data-status="selected">Selected</button>
-      <button class="fstatus-btn" data-status="rejected">Rejected</button>
-    </div>
-    <label>Sub</label>
-    <select class="fsel" id="sub-filter"><option value="all">All subreddits</option></select>
-    <label>Tag</label>
-    <select class="fsel" id="tag-filter"><option value="all">Any tag</option></select>
-    <input class="fsearch" id="search-input" type="text" placeholder="Search path…">
-    <div class="bulk-btns">
-      <button class="bulk-btn" onclick="bulkStatus('selected')">✓ Select visible</button>
-      <button class="bulk-btn" onclick="bulkStatus('rejected')">✗ Reject visible</button>
-      <button class="bulk-btn" onclick="bulkStatus('unreviewed')">? Reset visible</button>
-    </div>
-  </div>
-
-  <div id="matrix-section">
-    <button id="matrix-toggle-btn" onclick="toggleMatrices()">Variety matrix (co-occurrence)</button>
-    <div id="matrices" hidden>
-      <div class="matrix-panel"><h3>SELECTED IMAGES</h3><div id="matrix-selected"></div></div>
-      <div class="matrix-panel"><h3>ALL NON-REJECTED</h3><div id="matrix-all"></div></div>
-    </div>
-  </div>
-
-  <div id="grid"></div>
-</div>
-
-<div id="lightbox" hidden>
-  <div id="lb-img-area" onclick="closeLightbox()">
-    <img id="lb-img" src="" alt="">
-  </div>
-  <div id="lb-sidebar">
-    <div id="lb-header">
-      <div id="lb-nav">
-        <button class="lb-nav-btn" onclick="navigateLb(-1)">←</button>
-        <span id="lb-counter"></span>
-        <button class="lb-nav-btn" onclick="navigateLb(1)">→</button>
+  <div id="app" hidden>
+    <div id="header">
+      <h1>LoRA <span>Dataset Reviewer</span></h1>
+      <div id="stats">
+        <span class="stat-pill" id="stat-total"></span>
+        <span class="stat-pill sel" id="stat-sel"></span>
+        <span class="stat-pill rej" id="stat-rej"></span>
+        <span class="stat-pill unrev" id="stat-unrev"></span>
       </div>
-      <button id="lb-close" onclick="closeLightbox()">✕</button>
-    </div>
-    <div id="lb-body">
-      <div id="lb-path"></div>
-      <div id="lb-status-btns">
-        <button class="sbtn" id="lb-sel-btn" onclick="lbSetStatus('selected')">✓ Select</button>
-        <button class="sbtn" id="lb-unrev-btn" onclick="lbSetStatus('unreviewed')">? Skip</button>
-        <button class="sbtn" id="lb-rej-btn" onclick="lbSetStatus('rejected')">✗ Reject</button>
-      </div>
-      <div id="lb-tags-label">TAGS</div>
-      <div id="lb-tags-area"></div>
-      <button class="add-tag-btn" id="lb-add-tag-btn">+ tag</button>
-      <div id="lb-scores-label">CLIP SCORES</div>
-      <div id="lb-scores"></div>
-      <div id="lb-shortcuts">
-        S — select &nbsp; R — reject &nbsp; U — unreviewed<br>
-        ← / → — prev / next &nbsp; Esc — close
+      <div id="header-btns">
+        <button class="hbtn secondary" onclick="triggerFileInput()">Load file</button>
+        <button class="hbtn primary" onclick="exportData()">Export JSON</button>
       </div>
     </div>
+
+    <div id="filter-bar">
+      <label>Status</label>
+      <div class="filter-status" id="status-filter">
+        <button class="fstatus-btn active" data-status="all">All</button>
+        <button class="fstatus-btn" data-status="unreviewed">Unreviewed</button>
+        <button class="fstatus-btn" data-status="selected">Selected</button>
+        <button class="fstatus-btn" data-status="rejected">Rejected</button>
+      </div>
+      <label>Sub</label>
+      <select class="fsel" id="sub-filter">
+        <option value="all">All subreddits</option>
+      </select>
+      <label>Tag</label>
+      <select class="fsel" id="tag-filter">
+        <option value="all">Any tag</option>
+      </select>
+      <input class="fsearch" id="search-input" type="text" placeholder="Search path…">
+      <div class="bulk-btns">
+        <button class="bulk-btn" onclick="bulkStatus('selected')">✓ Select visible</button>
+        <button class="bulk-btn" onclick="bulkStatus('rejected')">✗ Reject visible</button>
+        <button class="bulk-btn" onclick="bulkStatus('unreviewed')">? Reset visible</button>
+      </div>
+    </div>
+
+    <div id="matrix-section">
+      <button id="matrix-toggle-btn" onclick="toggleMatrices()">Variety matrix (co-occurrence)</button>
+      <div id="matrices" hidden>
+        <div class="matrix-panel">
+          <h3>SELECTED IMAGES</h3>
+          <div id="matrix-selected"></div>
+        </div>
+        <div class="matrix-panel">
+          <h3>ALL NON-REJECTED</h3>
+          <div id="matrix-all"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="grid"></div>
   </div>
-</div>
 
-<div id="tag-dropdown" hidden></div>
-<div id="toast"></div>
-<input type="file" id="file-input" accept=".json" hidden>
+  <div id="lightbox" hidden>
+    <div id="lb-img-area" onclick="closeLightbox()">
+      <img id="lb-img" src="" alt="">
+    </div>
+    <div id="lb-sidebar">
+      <div id="lb-header">
+        <div id="lb-nav">
+          <button class="lb-nav-btn" onclick="navigateLb(-1)">←</button>
+          <span id="lb-counter"></span>
+          <button class="lb-nav-btn" onclick="navigateLb(1)">→</button>
+        </div>
+        <button id="lb-close" onclick="closeLightbox()">✕</button>
+      </div>
+      <div id="lb-body">
+        <div id="lb-path"></div>
+        <div id="lb-status-btns">
+          <button class="sbtn" id="lb-sel-btn" onclick="lbSetStatus('selected')">✓ Select</button>
+          <button class="sbtn" id="lb-unrev-btn" onclick="lbSetStatus('unreviewed')">? Skip</button>
+          <button class="sbtn" id="lb-rej-btn" onclick="lbSetStatus('rejected')">✗ Reject</button>
+        </div>
+        <div id="lb-tags-label">TAGS</div>
+        <div id="lb-tags-area"></div>
+        <button class="add-tag-btn" id="lb-add-tag-btn">+ tag</button>
+        <div id="lb-scores-label">CLIP SCORES</div>
+        <div id="lb-scores"></div>
+        <div id="lb-shortcuts">
+          S — select &nbsp; R — reject &nbsp; U — unreviewed<br>
+          ← / → — prev / next &nbsp; Esc — close
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script>
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let state = null;
-let tagAxis = {};      // tag → axis group name
-let filters = { status:'all', subreddit:'all', tag:'all', search:'' };
-let lbId    = null;    // active lightbox image id
-let lbIds   = [];      // current filtered ids for lb nav
-let saveTimer = null;
+  <div id="tag-dropdown" hidden></div>
+  <div id="toast"></div>
+  <input type="file" id="file-input" accept=".json" hidden>
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-async function init() {
-  const loadingEl = document.getElementById('loading');
-  const noDataEl  = document.getElementById('no-data');
-  const appEl     = document.getElementById('app');
+  <script>
+    // ─── STATE ────────────────────────────────────────────────────────────────────
+    let state = null;
+    let TAG_DISPLAY = {};
+    let tagAxis = {};      // tag → axis group name
+    let filters = { status: 'all', subreddit: 'all', tag: 'all', search: '' };
+    let lbId = null;    // active lightbox image id
+    let lbIds = [];      // current filtered ids for lb nav
+    let saveTimer = null;
 
-  function showError(msg) {
-    loadingEl.innerHTML = `
+    // ─── INIT ─────────────────────────────────────────────────────────────────────
+    async function init() {
+      const loadingEl = document.getElementById('loading');
+      const noDataEl = document.getElementById('no-data');
+      const appEl = document.getElementById('app');
+
+      function showError(msg) {
+        loadingEl.innerHTML = `
       <div style="color:#ff5252;font-family:monospace;font-size:13px;padding:32px;max-width:700px">
         <div style="font-size:15px;margin-bottom:12px">⚠ Failed to load</div>
         <pre style="white-space:pre-wrap;color:#ff8a80">${msg}</pre>
         <div style="margin-top:16px;color:#888">Check the browser console for full details.</div>
       </div>`;
-  }
-
-  try {
-    let data;
-    try {
-      const res = await fetch('./data.json');
-      if (!res.ok) throw new Error(`HTTP ${res.status} fetching data.json`);
-      data = await res.json();
-      console.log('data.json loaded ok —', data.images?.length, 'images');
-    } catch(fetchErr) {
-      // fetch failed — try localStorage fallback
-      const lsRaw = localStorage.getItem('lora_review_state');
-      if (lsRaw) {
-        if (confirm('Could not fetch data.json. Load saved state from browser storage?')) {
-          data = JSON.parse(lsRaw);
-        } else {
-        loadingEl.hidden = true;
-        noDataEl.hidden  = false;
-          return;
-        }
-      } else {
-        loadingEl.hidden = true;
-        noDataEl.hidden  = false;
-        return;
       }
-    }
 
-    // Check localStorage for newer version
-    try {
-      const lsRaw = localStorage.getItem('lora_review_state');
-      if (lsRaw) {
-        const lsParsed = JSON.parse(lsRaw);
-        if ((lsParsed.lastModified || 0) > (data.lastModified || 0)) {
-          if (confirm('Found newer review progress in browser storage — load it?')) {
-            data = lsParsed;
+      try {
+        let data;
+        try {
+          const res = await fetch('./data.json');
+          if (!res.ok) throw new Error(`HTTP ${res.status} fetching data.json`);
+          data = await res.json();
+          console.log('data.json loaded ok —', data.images?.length, 'images');
+        } catch (fetchErr) {
+          // fetch failed — try localStorage fallback
+          const lsRaw = localStorage.getItem('lora_review_state');
+          if (lsRaw) {
+            if (confirm('Could not fetch data.json. Load saved state from browser storage?')) {
+              data = JSON.parse(lsRaw);
+            } else {
+              loadingEl.hidden = true;
+              noDataEl.hidden = false;
+              return;
+            }
+          } else {
+            loadingEl.hidden = true;
+            noDataEl.hidden = false;
+            return;
           }
         }
+
+        // Check localStorage for newer version
+        try {
+          const lsRaw = localStorage.getItem('lora_review_state');
+          if (lsRaw) {
+            const lsParsed = JSON.parse(lsRaw);
+            if ((lsParsed.lastModified || 0) > (data.lastModified || 0)) {
+              if (confirm('Found newer review progress in browser storage — load it?')) {
+                data = lsParsed;
+              }
+            }
+          }
+        } catch (lsErr) {
+          console.warn('localStorage check failed (non-fatal):', lsErr);
+        }
+
+        console.log('Hydrating...');
+        hydrate(data);
+        console.log('Hydrate complete. Rendering...');
+
+      } catch (err) {
+        console.error('init failed:', err);
+        showError(err.stack || err.message || String(err));
       }
-    } catch(lsErr) {
-      console.warn('localStorage check failed (non-fatal):', lsErr);
     }
 
-    console.log('Hydrating...');
-    hydrate(data);
-    console.log('Hydrate complete. Rendering...');
+    function displayTag(tag) {
+      return TAG_DISPLAY[tag] || tag;
+    }
 
-  } catch(err) {
-    console.error('init failed:', err);
-    showError(err.stack || err.message || String(err));
-  }
-}
+    function hydrate(data) {
+      try {
+        state = data;
+        TAG_DISPLAY = {};
+        for (const [tag, syns] of Object.entries(state.tag_synonyms || {})) {
+          TAG_DISPLAY[tag] = Array.isArray(syns) && syns.length ? syns[0] : tag;
+        }
 
-function hydrate(data) {
-  try {
-    state = data;
-    state.lastModified = state.lastModified || 0;
-    tagAxis = {};
-    for (const [axis, tags] of Object.entries(state.axis_groups || {}))
-      for (const t of tags) tagAxis[t] = axis;
+        state.lastModified = state.lastModified || 0;
+        tagAxis = {};
+        for (const [axis, tags] of Object.entries(state.axis_groups || {}))
+          for (const t of tags) tagAxis[t] = axis;
 
-    buildFilterOptions();
+        buildFilterOptions();
 
-    document.getElementById('loading').hidden = true;
-    document.getElementById('no-data').hidden  = true;
-    document.getElementById('app').hidden = false;
+        document.getElementById('loading').hidden = true;
+        document.getElementById('no-data').hidden = true;
+        document.getElementById('app').hidden = false;
 
-    // Yield thread so browser actually paints before we block it with render
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-    try { render(); }
-    catch(e) {
-        console.error('render failed:', e);
-        document.getElementById('app').innerHTML =
-        `<div style="color:#ff5252;font-family:monospace;padding:32px">
+        // Yield thread so browser actually paints before we block it with render
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          try { render(); }
+          catch (e) {
+            console.error('render failed:', e);
+            document.getElementById('app').innerHTML =
+              `<div style="color:#ff5252;font-family:monospace;padding:32px">
             <b>Render error</b><br><br><pre>${e.stack || e.message}</pre>
         </div>`;
-    }
-    }));
-  } catch(err) {
-    console.error('hydrate/render failed:', err);
-    document.getElementById('loading').innerHTML =
-      `<div style="color:#ff5252;font-family:monospace;padding:32px;max-width:700px">
+          }
+        }));
+      } catch (err) {
+        console.error('hydrate/render failed:', err);
+        document.getElementById('loading').innerHTML =
+          `<div style="color:#ff5252;font-family:monospace;padding:32px;max-width:700px">
         <b>Render error</b><br><br>
         <pre style="white-space:pre-wrap">${err.stack || err.message}</pre>
       </div>`;
-  }
-}
-
-function loadFileData(file) {
-  const reader = new FileReader();
-  reader.onload = e => { try { hydrate(JSON.parse(e.target.result)); } catch(err) { alert('Invalid JSON: ' + err.message); } };
-  reader.readAsText(file);
-}
-
-function triggerFileInput() { document.getElementById('file-input').click(); }
-document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) loadFileData(e.target.files[0]); });
-
-// Drop zone
-const dropZone = document.getElementById('drop-zone');
-if (dropZone) {
-  dropZone.addEventListener('click', triggerFileInput);
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) loadFileData(e.dataTransfer.files[0]); });
-}
-
-// ─── PERSISTENCE ──────────────────────────────────────────────────────────────
-function saveLocal() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    state.lastModified = Date.now();
-    try { localStorage.setItem('lora_review_state', JSON.stringify(state)); showToast('Saved'); }
-    catch(e) { showToast('Storage full — export to save'); }
-  }, 300);
-}
-
-function exportData() {
-  state.lastModified = Date.now();
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'data.json';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  showToast('Exported data.json');
-}
-
-// ─── MUTATIONS ────────────────────────────────────────────────────────────────
-function imgById(id) { return state.images.find(i => i.id === id); }
-
-function setStatus(id, status) {
-  const img = imgById(id);
-  if (!img) return;
-  img.status = status;
-  saveLocal();
-  const card = document.querySelector(`.card[data-id="${id}"]`);
-  if (card) updateCardStatus(card, img);
-  renderStats(state.images);
-  if (document.getElementById('matrices').hidden === false) renderMatrices();
-  if (lbId === id) updateLbStatus(img);
-}
-
-function addTag(id, tag) {
-  const img = imgById(id);
-  if (!img || img.tags.includes(tag)) return;
-  img.tags.push(tag);
-  saveLocal();
-  rerenderCardTags(id);
-  if (lbId === id) renderLbTags(img);
-}
-
-function removeTag(id, tag) {
-  const img = imgById(id);
-  if (!img) return;
-  img.tags = img.tags.filter(t => t !== tag);
-  saveLocal();
-  rerenderCardTags(id);
-  if (lbId === id) renderLbTags(img);
-}
-
-function bulkStatus(status) {
-  const ids = getFilteredImages().map(i => i.id);
-  ids.forEach(id => { const img = imgById(id); if (img) img.status = status; });
-  saveLocal();
-  render();
-}
-
-// ─── FILTER ───────────────────────────────────────────────────────────────────
-function buildFilterOptions() {
-  const subSel = document.getElementById('sub-filter');
-  subSel.innerHTML = '<option value="all">All subreddits</option>';
-  (state.subreddits || []).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
-
-  const tagSel = document.getElementById('tag-filter');
-  tagSel.innerHTML = '<option value="all">Any tag</option>';
-  (state.all_tags || []).forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; tagSel.appendChild(o); });
-
-  document.getElementById('status-filter').querySelectorAll('.fstatus-btn').forEach(btn =>
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.fstatus-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filters.status = btn.dataset.status;
-      render();
-    }));
-
-  subSel.addEventListener('change', () => { filters.subreddit = subSel.value; render(); });
-  document.getElementById('tag-filter').addEventListener('change', () => { filters.tag = document.getElementById('tag-filter').value; render(); });
-  document.getElementById('search-input').addEventListener('input', e => { filters.search = e.target.value.toLowerCase(); render(); });
-}
-
-function getFilteredImages() {
-  return (state.images || []).filter(img => {
-    if (filters.status !== 'all' && img.status !== filters.status) return false;
-    if (filters.subreddit !== 'all' && img.subreddit !== filters.subreddit) return false;
-    if (filters.tag !== 'all' && !img.tags.includes(filters.tag)) return false;
-    if (filters.search && !img.path.toLowerCase().includes(filters.search)) return false;
-    return true;
-  });
-}
-
-// ─── MATRIX ───────────────────────────────────────────────────────────────────
-function computeMatrix(images) {
-  const tags = state.all_tags || [];
-  const N = tags.length;
-  const matrix = Array.from({length:N}, () => new Array(N).fill(0));
-  const totals  = new Array(N).fill(0);
-  const tagIdx  = Object.fromEntries(tags.map((t,i) => [t,i]));
-  for (const img of images) {
-    for (const ta of img.tags) {
-      const i = tagIdx[ta];
-      if (i === undefined) continue;
-      totals[i]++;
-      for (const tb of img.tags) {
-        const j = tagIdx[tb];
-        if (j !== undefined) matrix[i][j]++;
       }
     }
-  }
-  return {tags, matrix, totals};
-}
 
-function cellBg(count, rowTotal, rowTag, colTag) {
-  if (rowTag === colTag) return '#1a1a28';
-  if (!count) return '';
-  const pct = rowTotal > 0 ? count / rowTotal : 0;
-  const same = tagAxis[rowTag] && tagAxis[rowTag] === tagAxis[colTag];
-  if (same) {
-    if (pct > .15) return `rgba(255,82,82,${Math.min(pct * .9, .7)})`;
-    if (pct > .05) return 'rgba(255,82,82,.18)';
-    return '';
-  }
-  if (pct > .80) return 'rgba(255,160,50,.65)';
-  if (pct > .60) return 'rgba(255,160,50,.32)';
-  if (pct > .30) return 'rgba(79,195,247,.28)';
-  if (pct > .10) return 'rgba(79,195,247,.12)';
-  return '';
-}
-
-function renderMatrix(images, containerId, label) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!images.length) { el.innerHTML = '<div style="color:var(--text3);font-size:11px;font-family:var(--mono);padding:8px">No images</div>'; return; }
-  const {tags, matrix, totals} = computeMatrix(images);
-  const N = tags.length;
-  let html = '<div style="overflow:auto"><table class="matrix-table"><thead><tr><th class="mth-corner"></th>';
-  for (const t of tags) html += `<th class="mth-col" title="${t}"><div>${t}</div></th>`;
-  html += '</tr></thead><tbody>';
-  for (let i = 0; i < N; i++) {
-    const rowTag = tags[i];
-    const rowTotal = totals[i];
-    html += `<tr><td class="mtr-label" title="${rowTag}">${rowTag}</td>`;
-    for (let j = 0; j < N; j++) {
-      const colTag = tags[j];
-      const count  = matrix[i][j];
-      const bg     = cellBg(count, rowTotal, rowTag, colTag);
-      const isDiag = (i === j);
-      const pct    = rowTotal > 0 ? Math.round(count/rowTotal*100) : 0;
-      const title  = isDiag ? `${rowTag}: ${count} images` : `${rowTag} ∩ ${colTag}: ${count} (${pct}%)`;
-      html += `<td class="mcell${isDiag?' mcell-diag':''}" style="${bg?'background:'+bg:''}" title="${title}">`;
-      html += `<div class="mcell-inner"><span class="mcell-count">${count||''}</span>`;
-      if (!isDiag && count > 0) html += `<span class="mcell-pct">${pct}%</span>`;
-      html += '</div></td>';
+    function loadFileData(file) {
+      const reader = new FileReader();
+      reader.onload = e => { try { hydrate(JSON.parse(e.target.result)); } catch (err) { alert('Invalid JSON: ' + err.message); } };
+      reader.readAsText(file);
     }
-    html += '</tr>';
-  }
-  html += '</tbody></table></div>';
-  el.innerHTML = html;
-}
 
-function renderMatrices() {
-  const all = state.images || [];
-  renderMatrix(all.filter(i => i.status === 'selected'), 'matrix-selected');
-  renderMatrix(all.filter(i => i.status !== 'rejected'),  'matrix-all');
-}
+    function triggerFileInput() { document.getElementById('file-input').click(); }
+    document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) loadFileData(e.target.files[0]); });
 
-function toggleMatrices() {
-  const panel = document.getElementById('matrices');
-  const btn   = document.getElementById('matrix-toggle-btn');
-  const open  = panel.hidden;
-  panel.hidden = !open;
-  btn.classList.toggle('open', open);
-  if (open) renderMatrices();
-}
+    // Drop zone
+    const dropZone = document.getElementById('drop-zone');
+    if (dropZone) {
+      dropZone.addEventListener('click', triggerFileInput);
+      dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+      dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) loadFileData(e.dataTransfer.files[0]); });
+    }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-function render() {
-  const filtered = getFilteredImages();
-  lbIds = filtered.map(i => i.id);
-  renderStats(state.images);
-  renderGrid(filtered);
-}
+    // ─── PERSISTENCE ──────────────────────────────────────────────────────────────
+    function saveLocal() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        state.lastModified = Date.now();
+        try { localStorage.setItem('lora_review_state', JSON.stringify(state)); showToast('Saved'); }
+        catch (e) { showToast('Storage full — export to save'); }
+      }, 300);
+    }
 
-function renderStats(images) {
-  const total  = images.length;
-  const sel    = images.filter(i => i.status === 'selected').length;
-  const rej    = images.filter(i => i.status === 'rejected').length;
-  const unrev  = total - sel - rej;
-  document.getElementById('stat-total').textContent = `${total} total`;
-  document.getElementById('stat-sel').textContent   = `✓ ${sel} selected`;
-  document.getElementById('stat-rej').textContent   = `✗ ${rej} rejected`;
-  document.getElementById('stat-unrev').textContent = `? ${unrev} unreviewed`;
-}
+    function exportData() {
+      state.lastModified = Date.now();
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'data.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      showToast('Exported data.json');
+    }
 
-const PAGE_SIZE = 60;
-let currentImages = [];
-let renderedCount = 0;
-let sentinel = null;
-let observer = null;
+    // ─── MUTATIONS ────────────────────────────────────────────────────────────────
+    function imgById(id) { return state.images.find(i => i.id === id); }
 
-function renderGrid(images) {
-  const grid = document.getElementById('grid');
+    function setStatus(id, status) {
+      const img = imgById(id);
+      if (!img) return;
+      img.status = status;
+      saveLocal();
+      const card = document.querySelector(`.card[data-id="${id}"]`);
+      if (card) updateCardStatus(card, img);
+      renderStats(state.images);
+      if (document.getElementById('matrices').hidden === false) renderMatrices();
+      if (lbId === id) updateLbStatus(img);
+    }
 
-  // Tear down previous observer
-  if (observer) { observer.disconnect(); observer = null; }
-  if (sentinel) { sentinel.remove(); sentinel = null; }
+    function addTag(id, tag) {
+      const img = imgById(id);
+      if (!img || img.tags.includes(tag)) return;
+      img.tags.push(tag);
+      saveLocal();
+      rerenderCardTags(id);
+      if (lbId === id) renderLbTags(img);
+    }
 
-  currentImages = images;
-  renderedCount = 0;
-  grid.innerHTML = '';
+    function removeTag(id, tag) {
+      const img = imgById(id);
+      if (!img) return;
+      img.tags = img.tags.filter(t => t !== tag);
+      saveLocal();
+      rerenderCardTags(id);
+      if (lbId === id) renderLbTags(img);
+    }
 
-  if (!images.length) {
-    grid.innerHTML = '<div id="grid-empty">No images match filters</div>';
-    return;
-  }
+    function bulkStatus(status) {
+      const ids = getFilteredImages().map(i => i.id);
+      ids.forEach(id => { const img = imgById(id); if (img) img.status = status; });
+      saveLocal();
+      render();
+    }
 
-  renderNextChunk();
+    // ─── FILTER ───────────────────────────────────────────────────────────────────
+    function buildFilterOptions() {
+      const subSel = document.getElementById('sub-filter');
+      subSel.innerHTML = '<option value="all">All subreddits</option>';
+      (state.subreddits || []).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
 
-  // Sentinel div at the bottom — when it scrolls into view, render more
-  sentinel = document.createElement('div');
-  sentinel.style.cssText = 'height:1px;width:100%';
-  grid.after(sentinel);
+      const tagSel = document.getElementById('tag-filter');
+      tagSel.innerHTML = '<option value="all">Any tag</option>';
+      (state.all_tags || []).forEach(t => { const o = document.createElement('option'); o.value = t; o.title = t; o.textContent = displayTag(t); tagSel.appendChild(o); });
 
-  observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) renderNextChunk();
-  }, { rootMargin: '400px' });
+      document.getElementById('status-filter').querySelectorAll('.fstatus-btn').forEach(btn =>
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.fstatus-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          filters.status = btn.dataset.status;
+          render();
+        }));
 
-  observer.observe(sentinel);
-}
+      subSel.addEventListener('change', () => { filters.subreddit = subSel.value; render(); });
+      document.getElementById('tag-filter').addEventListener('change', () => { filters.tag = document.getElementById('tag-filter').value; render(); });
+      document.getElementById('search-input').addEventListener('input', e => { filters.search = e.target.value.toLowerCase(); render(); });
+    }
 
-function renderNextChunk() {
-  if (renderedCount >= currentImages.length) {
-    if (observer) { observer.disconnect(); observer = null; }
-    return;
-  }
-  const grid  = document.getElementById('grid');
-  const chunk = currentImages.slice(renderedCount, renderedCount + PAGE_SIZE);
-  const frag  = document.createDocumentFragment();
-  chunk.forEach(img => {
-    const div = document.createElement('div');
-    div.innerHTML = cardHTML(img);
-    frag.appendChild(div.firstElementChild);
-  });
-  grid.appendChild(frag);
-  renderedCount += chunk.length;
-}
+    function getFilteredImages() {
+      return (state.images || []).filter(img => {
+        if (filters.status !== 'all' && img.status !== filters.status) return false;
+        if (filters.subreddit !== 'all' && img.subreddit !== filters.subreddit) return false;
+        if (filters.tag !== 'all' && !img.tags.includes(filters.tag)) return false;
+        if (filters.search && !img.path.toLowerCase().includes(filters.search)) return false;
+        return true;
+      });
+    }
 
-function cardHTML(img) {
-  const tagPills = img.tags.map(t =>
-    `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
-  ).join('');
-  const topScores = Object.entries(img.clip_scores || {}).sort((a,b)=>b[1]-a[1]).slice(0,4);
-  const scoreRows = topScores.map(([t,v]) =>
-    `<div class="score-row"><span class="score-name">${t}</span><span class="score-val${v>.6?' top':''}">${v.toFixed(3)}</span></div>`
-  ).join('');
+    // ─── MATRIX ───────────────────────────────────────────────────────────────────
+    function computeMatrix(images) {
+      const tags = state.all_tags || [];
+      const N = tags.length;
+      const matrix = Array.from({ length: N }, () => new Array(N).fill(0));
+      const totals = new Array(N).fill(0);
+      const tagIdx = Object.fromEntries(tags.map((t, i) => [t, i]));
+      for (const img of images) {
+        for (const ta of img.tags) {
+          const i = tagIdx[ta];
+          if (i === undefined) continue;
+          totals[i]++;
+          for (const tb of img.tags) {
+            const j = tagIdx[tb];
+            if (j !== undefined) matrix[i][j]++;
+          }
+        }
+      }
+      return { tags, matrix, totals };
+    }
 
-  return `<div class="card status-${img.status}" data-id="${img.id}">
+    function cellBg(count, rowTotal, rowTag, colTag) {
+      if (rowTag === colTag) return '#1a1a28';
+      if (!count) return '';
+      const pct = rowTotal > 0 ? count / rowTotal : 0;
+      const same = tagAxis[rowTag] && tagAxis[rowTag] === tagAxis[colTag];
+      if (same) {
+        if (pct > .15) return `rgba(255,82,82,${Math.min(pct * .9, .7)})`;
+        if (pct > .05) return 'rgba(255,82,82,.18)';
+        return '';
+      }
+      if (pct > .80) return 'rgba(255,160,50,.65)';
+      if (pct > .60) return 'rgba(255,160,50,.32)';
+      if (pct > .30) return 'rgba(79,195,247,.28)';
+      if (pct > .10) return 'rgba(79,195,247,.12)';
+      return '';
+    }
+
+    function renderMatrix(images, containerId, label) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      if (!images.length) { el.innerHTML = '<div style="color:var(--text3);font-size:11px;font-family:var(--mono);padding:8px">No images</div>'; return; }
+      const { tags, matrix, totals } = computeMatrix(images);
+      const N = tags.length;
+      let html = '<div style="overflow:auto"><table class="matrix-table"><thead><tr><th class="mth-corner"></th>';
+      for (const t of tags) html += `<th class="mth-col" title="${t}"><div>${displayTag(t)}</div></th>`;
+      html += '</tr></thead><tbody>';
+      for (let i = 0; i < N; i++) {
+        const rowTag = tags[i];
+        const rowTotal = totals[i];
+        html += `<td class="mtr-label" title="${rowTag}">${displayTag(rowTag)}</td>`;
+        for (let j = 0; j < N; j++) {
+          const colTag = tags[j];
+          const count = matrix[i][j];
+          const bg = cellBg(count, rowTotal, rowTag, colTag);
+          const isDiag = (i === j);
+          const pct = rowTotal > 0 ? Math.round(count / rowTotal * 100) : 0;
+          const title = isDiag ? `${rowTag}: ${count} images` : `${rowTag} ∩ ${colTag}: ${count} (${pct}%)`;
+          html += `<td class="mcell${isDiag ? ' mcell-diag' : ''}" style="${bg ? 'background:' + bg : ''}" title="${title}">`;
+          html += `<div class="mcell-inner"><span class="mcell-count">${count || ''}</span>`;
+          if (!isDiag && count > 0) html += `<span class="mcell-pct">${pct}%</span>`;
+          html += '</div></td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+      el.innerHTML = html;
+    }
+
+    function renderMatrices() {
+      const all = state.images || [];
+      renderMatrix(all.filter(i => i.status === 'selected'), 'matrix-selected');
+      renderMatrix(all.filter(i => i.status !== 'rejected'), 'matrix-all');
+    }
+
+    function toggleMatrices() {
+      const panel = document.getElementById('matrices');
+      const btn = document.getElementById('matrix-toggle-btn');
+      const open = panel.hidden;
+      panel.hidden = !open;
+      btn.classList.toggle('open', open);
+      if (open) renderMatrices();
+    }
+
+    // ─── RENDER ───────────────────────────────────────────────────────────────────
+    function render() {
+      const filtered = getFilteredImages();
+      lbIds = filtered.map(i => i.id);
+      renderStats(state.images);
+      renderGrid(filtered);
+    }
+
+    function renderStats(images) {
+      const total = images.length;
+      const sel = images.filter(i => i.status === 'selected').length;
+      const rej = images.filter(i => i.status === 'rejected').length;
+      const unrev = total - sel - rej;
+      document.getElementById('stat-total').textContent = `${total} total`;
+      document.getElementById('stat-sel').textContent = `✓ ${sel} selected`;
+      document.getElementById('stat-rej').textContent = `✗ ${rej} rejected`;
+      document.getElementById('stat-unrev').textContent = `? ${unrev} unreviewed`;
+    }
+
+    const PAGE_SIZE = 60;
+    let currentImages = [];
+    let renderedCount = 0;
+    let sentinel = null;
+    let observer = null;
+
+    function renderGrid(images) {
+      const grid = document.getElementById('grid');
+
+      // Tear down previous observer
+      if (observer) { observer.disconnect(); observer = null; }
+      if (sentinel) { sentinel.remove(); sentinel = null; }
+
+      currentImages = images;
+      renderedCount = 0;
+      grid.innerHTML = '';
+
+      if (!images.length) {
+        grid.innerHTML = '<div id="grid-empty">No images match filters</div>';
+        return;
+      }
+
+      renderNextChunk();
+
+      // Sentinel div at the bottom — when it scrolls into view, render more
+      sentinel = document.createElement('div');
+      sentinel.style.cssText = 'height:1px;width:100%';
+      grid.after(sentinel);
+
+      observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) renderNextChunk();
+      }, { rootMargin: '400px' });
+
+      observer.observe(sentinel);
+    }
+
+    function renderNextChunk() {
+      if (renderedCount >= currentImages.length) {
+        if (observer) { observer.disconnect(); observer = null; }
+        return;
+      }
+      const grid = document.getElementById('grid');
+      const chunk = currentImages.slice(renderedCount, renderedCount + PAGE_SIZE);
+      const frag = document.createDocumentFragment();
+      chunk.forEach(img => {
+        const div = document.createElement('div');
+        div.innerHTML = cardHTML(img);
+        frag.appendChild(div.firstElementChild);
+      });
+      grid.appendChild(frag);
+      renderedCount += chunk.length;
+    }
+
+    function cardHTML(img) {
+      const tagPills = img.tags.map(t =>
+        `<span class="tag-pill"><span class="tag-name" title="${t}">${displayTag(t)}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
+      ).join('');
+      const topScores = Object.entries(img.clip_scores || {}).sort((a, b) => b[1] - a[1]).slice(0, 4);
+      const scoreRows = topScores.map(([t, v]) =>
+        `<div class="score-row"><span class="score-name">${t}</span><span class="score-val${v > .6 ? ' top' : ''}">${v.toFixed(3)}</span></div>`
+      ).join('');
+
+      return `<div class="card status-${img.status}" data-id="${img.id}">
     <div class="card-img-wrap" onclick="openLightbox(${img.id})">
       <img src="${img.path}" loading="lazy" alt="">
     </div>
@@ -645,9 +1377,9 @@ function cardHTML(img) {
     <div class="card-body">
       <div class="card-meta" title="${img.path}">${img.subreddit} · ${img.path.split('/').pop()}</div>
       <div class="status-btns">
-        <button class="sbtn${img.status==='selected'?' active-sel':''}" onclick="setStatus(${img.id},'selected')">✓</button>
-        <button class="sbtn${img.status==='unreviewed'?' active-unrev':''}" onclick="setStatus(${img.id},'unreviewed')">?</button>
-        <button class="sbtn${img.status==='rejected'?' active-rej':''}" onclick="setStatus(${img.id},'rejected')">✗</button>
+        <button class="sbtn${img.status === 'selected' ? ' active-sel' : ''}" onclick="setStatus(${img.id},'selected')">✓</button>
+        <button class="sbtn${img.status === 'unreviewed' ? ' active-unrev' : ''}" onclick="setStatus(${img.id},'unreviewed')">?</button>
+        <button class="sbtn${img.status === 'rejected' ? ' active-rej' : ''}" onclick="setStatus(${img.id},'rejected')">✗</button>
       </div>
       <div class="tags-area" id="tags-${img.id}">${tagPills}
         <button class="add-tag-btn" onclick="openTagDropdown(${img.id},this)">+</button>
@@ -656,151 +1388,152 @@ function cardHTML(img) {
       <div class="scores-list">${scoreRows}</div>
     </div>
   </div>`;
-}
+    }
 
-function updateCardStatus(card, img) {
-  card.className = `card status-${img.status}`;
-  const bar = card.querySelector('.card-status-bar');
-  bar.className = `card-status-bar ${img.status}`;
-  card.querySelectorAll('.sbtn').forEach(b => b.className = 'sbtn');
-  if (img.status === 'selected') card.querySelectorAll('.sbtn')[0].classList.add('active-sel');
-  if (img.status === 'unreviewed') card.querySelectorAll('.sbtn')[1].classList.add('active-unrev');
-  if (img.status === 'rejected') card.querySelectorAll('.sbtn')[2].classList.add('active-rej');
-}
+    function updateCardStatus(card, img) {
+      card.className = `card status-${img.status}`;
+      const bar = card.querySelector('.card-status-bar');
+      bar.className = `card-status-bar ${img.status}`;
+      card.querySelectorAll('.sbtn').forEach(b => b.className = 'sbtn');
+      if (img.status === 'selected') card.querySelectorAll('.sbtn')[0].classList.add('active-sel');
+      if (img.status === 'unreviewed') card.querySelectorAll('.sbtn')[1].classList.add('active-unrev');
+      if (img.status === 'rejected') card.querySelectorAll('.sbtn')[2].classList.add('active-rej');
+    }
 
-function rerenderCardTags(id) {
-  const img = imgById(id);
-  const el  = document.getElementById(`tags-${id}`);
-  if (!el || !img) return;
-  const tagPills = img.tags.map(t =>
-    `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${id},'${t}')">×</button></span>`
-  ).join('');
-  el.innerHTML = tagPills + `<button class="add-tag-btn" onclick="openTagDropdown(${id},this)">+</button>`;
-}
+    function rerenderCardTags(id) {
+      const img = imgById(id);
+      const el = document.getElementById(`tags-${id}`);
+      if (!el || !img) return;
+      const tagPills = img.tags.map(t =>
+        `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${id},'${t}')">×</button></span>`
+      ).join('');
+      el.innerHTML = tagPills + `<button class="add-tag-btn" onclick="openTagDropdown(${id},this)">+</button>`;
+    }
 
-// ─── TAG DROPDOWN ─────────────────────────────────────────────────────────────
-let dropdownFor = null;
-function openTagDropdown(imgId, btn) {
-  const dd  = document.getElementById('tag-dropdown');
-  const img = imgById(imgId);
-  if (!img) return;
-  dropdownFor = imgId;
-  const available = (state.all_tags || []).filter(t => !img.tags.includes(t));
-  if (!available.length) { showToast('All tags assigned'); return; }
+    // ─── TAG DROPDOWN ─────────────────────────────────────────────────────────────
+    let dropdownFor = null;
+    function openTagDropdown(imgId, btn) {
+      const dd = document.getElementById('tag-dropdown');
+      const img = imgById(imgId);
+      if (!img) return;
+      dropdownFor = imgId;
+      const available = (state.all_tags || []).filter(t => !img.tags.includes(t));
+      if (!available.length) { showToast('All tags assigned'); return; }
 
-  const grouped = {};
-  for (const t of available) {
-    const a = tagAxis[t] || 'other';
-    if (!grouped[a]) grouped[a] = [];
-    grouped[a].push(t);
-  }
+      const grouped = {};
+      for (const t of available) {
+        const a = tagAxis[t] || 'other';
+        if (!grouped[a]) grouped[a] = [];
+        grouped[a].push(t);
+      }
 
-  let html = '';
-  for (const [axis, tags] of Object.entries(grouped)) {
-    html += `<div class="td-axis">${axis.toUpperCase()}</div>`;
-    html += tags.map(t => `<div class="td-item" onclick="addTag(${imgId},'${t}');closeTagDropdown()">${t}</div>`).join('');
-  }
-  dd.innerHTML = html;
+      let html = '';
+      for (const [axis, tags] of Object.entries(grouped)) {
+        html += `<div class="td-axis">${axis.toUpperCase()}</div>`;
+        html += tags.map(t => `<div class="td-item" onclick="addTag(${imgId},'${t}');closeTagDropdown()" title="${t}">${displayTag(t)}</div>`).join('');
+      }
+      dd.innerHTML = html;
 
-  const rect = btn.getBoundingClientRect();
-  dd.style.top  = (rect.bottom + 4) + 'px';
-  dd.style.left = rect.left + 'px';
-  dd.hidden = false;
+      const rect = btn.getBoundingClientRect();
+      dd.style.top = (rect.bottom + 4) + 'px';
+      dd.style.left = rect.left + 'px';
+      dd.hidden = false;
 
-  setTimeout(() => document.addEventListener('click', closeDropdownOutside, {once:true}), 10);
-}
+      setTimeout(() => document.addEventListener('click', closeDropdownOutside, { once: true }), 10);
+    }
 
-function closeTagDropdown() { document.getElementById('tag-dropdown').hidden = true; dropdownFor = null; }
-function closeDropdownOutside(e) { if (!document.getElementById('tag-dropdown').contains(e.target)) closeTagDropdown(); }
+    function closeTagDropdown() { document.getElementById('tag-dropdown').hidden = true; dropdownFor = null; }
+    function closeDropdownOutside(e) { if (!document.getElementById('tag-dropdown').contains(e.target)) closeTagDropdown(); }
 
-// ─── LIGHTBOX ─────────────────────────────────────────────────────────────────
-function openLightbox(id) {
-  lbId = id;
-  const img = imgById(id);
-  if (!img) return;
-  const lb = document.getElementById('lightbox');
-  lb.hidden = false;
-  renderLb(img);
-}
+    // ─── LIGHTBOX ─────────────────────────────────────────────────────────────────
+    function openLightbox(id) {
+      lbId = id;
+      const img = imgById(id);
+      if (!img) return;
+      const lb = document.getElementById('lightbox');
+      lb.hidden = false;
+      renderLb(img);
+    }
 
-function renderLb(img) {
-  document.getElementById('lb-img').src = img.path;
-  document.getElementById('lb-path').textContent = img.path;
-  const idx = lbIds.indexOf(img.id);
-  document.getElementById('lb-counter').textContent = `${idx+1} / ${lbIds.length}`;
-  updateLbStatus(img);
-  renderLbTags(img);
-  // Scores
-  const scores = document.getElementById('lb-scores');
-  const sorted = Object.entries(img.clip_scores || {}).sort((a,b)=>b[1]-a[1]);
-  scores.innerHTML = sorted.map(([t,v]) =>
-    `<div class="lb-score-row"><span class="sn">${t}</span><span class="sv${v>.55?' hi':''}">${v.toFixed(3)}</span></div>`
-  ).join('');
-  // Add-tag button
-  document.getElementById('lb-add-tag-btn').onclick = () =>
-    openTagDropdown(img.id, document.getElementById('lb-add-tag-btn'));
-}
+    function renderLb(img) {
+      document.getElementById('lb-img').src = img.path;
+      document.getElementById('lb-path').textContent = img.path;
+      const idx = lbIds.indexOf(img.id);
+      document.getElementById('lb-counter').textContent = `${idx + 1} / ${lbIds.length}`;
+      updateLbStatus(img);
+      renderLbTags(img);
+      // Scores
+      const scores = document.getElementById('lb-scores');
+      const sorted = Object.entries(img.clip_scores || {}).sort((a, b) => b[1] - a[1]);
+      scores.innerHTML = sorted.map(([t, v]) =>
+        `<div class="lb-score-row"><span class="sn">${t}</span><span class="sv${v > .55 ? ' hi' : ''}">${v.toFixed(3)}</span></div>`
+      ).join('');
+      // Add-tag button
+      document.getElementById('lb-add-tag-btn').onclick = () =>
+        openTagDropdown(img.id, document.getElementById('lb-add-tag-btn'));
+    }
 
-function updateLbStatus(img) {
-  const s = img.status;
-  document.getElementById('lb-sel-btn').className   = 'sbtn' + (s==='selected'  ? ' active-sel'   : '');
-  document.getElementById('lb-unrev-btn').className = 'sbtn' + (s==='unreviewed'? ' active-unrev' : '');
-  document.getElementById('lb-rej-btn').className   = 'sbtn' + (s==='rejected'  ? ' active-rej'   : '');
-}
+    function updateLbStatus(img) {
+      const s = img.status;
+      document.getElementById('lb-sel-btn').className = 'sbtn' + (s === 'selected' ? ' active-sel' : '');
+      document.getElementById('lb-unrev-btn').className = 'sbtn' + (s === 'unreviewed' ? ' active-unrev' : '');
+      document.getElementById('lb-rej-btn').className = 'sbtn' + (s === 'rejected' ? ' active-rej' : '');
+    }
 
-function renderLbTags(img) {
-  const area = document.getElementById('lb-tags-area');
-  area.innerHTML = img.tags.map(t =>
-    `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
-  ).join('');
-}
+    function renderLbTags(img) {
+      const area = document.getElementById('lb-tags-area');
+      area.innerHTML = img.tags.map(t =>
+        `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
+      ).join('');
+    }
 
-function lbSetStatus(status) { if (lbId !== null) setStatus(lbId, status); }
+    function lbSetStatus(status) { if (lbId !== null) setStatus(lbId, status); }
 
-function closeLightbox() { document.getElementById('lightbox').hidden = true; lbId = null; }
+    function closeLightbox() { document.getElementById('lightbox').hidden = true; lbId = null; }
 
-function navigateLb(dir) {
-  if (lbId === null || !lbIds.length) return;
-  let idx = lbIds.indexOf(lbId) + dir;
-  idx = Math.max(0, Math.min(lbIds.length-1, idx));
-  lbId = lbIds[idx];
-  renderLb(imgById(lbId));
-}
+    function navigateLb(dir) {
+      if (lbId === null || !lbIds.length) return;
+      let idx = lbIds.indexOf(lbId) + dir;
+      idx = Math.max(0, Math.min(lbIds.length - 1, idx));
+      lbId = lbIds[idx];
+      renderLb(imgById(lbId));
+    }
 
-// ─── KEYBOARD ─────────────────────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (document.getElementById('lightbox').hidden) return;
-  if (e.target.tagName === 'INPUT') return;
-  switch(e.key) {
-    case 'Escape': closeLightbox(); break;
-    case 'ArrowLeft':  navigateLb(-1); break;
-    case 'ArrowRight': navigateLb(1);  break;
-    case 's': case 'S': lbSetStatus('selected');   break;
-    case 'r': case 'R': lbSetStatus('rejected');   break;
-    case 'u': case 'U': lbSetStatus('unreviewed'); break;
-  }
-});
+    // ─── KEYBOARD ─────────────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('lightbox').hidden) return;
+      if (e.target.tagName === 'INPUT') return;
+      switch (e.key) {
+        case 'Escape': closeLightbox(); break;
+        case 'ArrowLeft': navigateLb(-1); break;
+        case 'ArrowRight': navigateLb(1); break;
+        case 's': case 'S': lbSetStatus('selected'); break;
+        case 'r': case 'R': lbSetStatus('rejected'); break;
+        case 'u': case 'U': lbSetStatus('unreviewed'); break;
+      }
+    });
 
-// ─── TOAST ────────────────────────────────────────────────────────────────────
-let toastTimer = null;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
-}
+    // ─── TOAST ────────────────────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
 
-// ─── DRAG-DROP ON APP ─────────────────────────────────────────────────────────
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
-  e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if (f && f.name.endsWith('.json')) loadFileData(f);
-});
+    // ─── DRAG-DROP ON APP ─────────────────────────────────────────────────────────
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', e => {
+      e.preventDefault();
+      const f = e.dataTransfer.files[0];
+      if (f && f.name.endsWith('.json')) loadFileData(f);
+    });
 
-// ─── GO ───────────────────────────────────────────────────────────────────────
-init();
-</script>
+    // ─── GO ───────────────────────────────────────────────────────────────────────
+    init();
+  </script>
 </body>
+
 </html>
