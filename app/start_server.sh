@@ -16,6 +16,6 @@ if [ -f "$PID_FILE" ]; then
 fi
 
 cd "$DEST"
-python3 -m http.server 8000 &
+python3 -m http.server 8000 > /dev/null 2>&1 &
 echo $! > "$PID_FILE"
 echo "Server started (PID $(cat $PID_FILE))"
