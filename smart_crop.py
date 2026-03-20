@@ -11,7 +11,6 @@ Usage:
 import cv2
 import numpy as np
 import argparse
-import shutil
 from pathlib import Path
 from PIL import Image
 
