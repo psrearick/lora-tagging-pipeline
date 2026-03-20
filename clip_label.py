@@ -70,7 +70,7 @@ BUCKETS = {
 
 def load_model():
     model, _, preprocess = open_clip.create_model_and_transforms(
-        "ViT-B-32", pretrained="openai", precision="fp32", quick_gelu=True
+        "ViT-B-32-quickgelu", pretrained="openai", precision="fp32"
     )
     tokenizer = open_clip.get_tokenizer("ViT-B-32")
     model.eval()

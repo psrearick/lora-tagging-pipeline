@@ -40,7 +40,7 @@ AXIS_GROUPS = {
 
 ALL_TAGS = [tag for group in AXIS_GROUPS.values() for tag in group]
 
-THRESHOLD = 0.20
+THRESHOLD = 0.25
 
 
 def assign_auto_tags(scores: dict) -> list:
