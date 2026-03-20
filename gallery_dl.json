@@ -1,0 +1,19 @@
+{
+    "extractor": {
+        "reddit": {
+            "parent-skip": true,
+            "directory": ["{subreddit}"],
+            "parent-directory": true,
+            "parent-metadata": "_reddit"
+        },
+        "imgur": {
+            "directory": {
+                "_reddit": []
+            }
+        }
+    },
+    "downloader": {
+        "part": false,
+        "retries": 3
+    }
+}

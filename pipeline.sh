@@ -1,38 +1,36 @@
 #!/bin/bash
 
-CUR="$(pwd)"
-
 dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))";
 DIR="${dirx%x}";
 cd "$DIR"
 
-source "$DIR/sources.conf"
+source "$DIR/env.conf"
 
 CROP="$DEST/cropped"
 LABELS="$DEST/clip_labels.json"
 
 function download() {
-    "$CUR/download.sh"
+    "$DIR/download.sh"
 }
 
 function filter() {
-    "$CUR/filter.sh"
+    "$DIR/filter.sh"
 }
 
 function crop() {
-    poetry run python "$CUR/smart_crop.py" "$DEST/sorted/accepted" "$CROP"
+    poetry run python "$DIR/smart_crop.py" "$DEST/sorted/accepted" "$CROP"
 }
 
 function dedupe() {
-    poetry run python "$CUR/dedupe.py" "$CROP"
+    poetry run python "$DIR/dedupe.py" "$CROP"
 }
 
 function clip() {
-    poetry run python "$CUR/clip_label.py" "$CROP" "$LABELS"
+    poetry run python "$DIR/clip_label.py" "$CROP" "$LABELS"
 }
 
 function generate() {
-    poetry run python "$CUR/generate_data.py" "$LABELS" "$DEST/data.json"
+    poetry run python "$DIR/generate_data.py" "$LABELS" "$DEST/data.json"
 }
 
 function open_gallery() {
@@ -40,11 +38,11 @@ function open_gallery() {
 }
 
 function stop() {
-    "$CUR/stop_server.sh"
+    "$DIR/stop_server.sh"
 }
 
 function start() {
-    "$CUR/start_server.sh"
+    "$DIR/start_server.sh"
 }
 
 function review() {
@@ -54,10 +52,11 @@ function review() {
 }
 
 function export_training() {
-    if [[ -v LORA_CONFIG ]]; then
-        poetry run python "$CUR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
+    if [[ -n "$LORA_CONFIG" ]]
+    then
+        poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
     else
-        poetry run python "$CUR/export_training.py" "$DEST/training" --group-by-lora
+        poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora
     fi
 }
 
@@ -82,7 +81,6 @@ function usage() {
 
 case "$1" in
     download)
-        # Shift the arguments so $1 within the function refers to the name, not the command
         shift
         download
         ;;
@@ -138,5 +136,3 @@ case "$1" in
         usage
         ;;
 esac
-
-cd "$CUR"

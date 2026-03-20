@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 
-CUR="$(pwd)"
-
 dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))";
 DIR="${dirx%x}";
 cd "$DIR"
 
-source "$DIR/sources.conf"
+source "$DIR/env.conf"
 
 for sub in "${SUBREDDITS[@]}"; do
     echo "========================================="
@@ -15,8 +13,8 @@ for sub in "${SUBREDDITS[@]}"; do
 
     gallery-dl \
         --download-archive "$ARCHIVE" \
-        --directory ["{subreddit}"] \
-        -d "$DEST/raw" \
+        --destination "$DEST/raw" \
+        --config "$DIR/$GALLERY_CONF" \
         --range "$START-$END" \
         --chapter-range "$START-$END" \
         --filter "extension in ('jpg', 'jpeg', 'png', 'webp')" \
@@ -26,5 +24,3 @@ done
 echo ""
 echo "All downloads complete."
 echo "Archive: $ARCHIVE"
-
-cd "$CUR"

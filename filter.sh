@@ -1,12 +1,10 @@
 #!/bin/bash
 
-CUR="$(pwd)"
-
 dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))";
 DIR="${dirx%x}";
 cd "$DIR"
 
-source "$DIR/sources.conf"
+source "$DIR/env.conf"
 
 echo "=== Filtering dataset ==="
 
@@ -17,5 +15,3 @@ python3 filter_dataset.py $DEST/raw $DEST/filtered \
     --sharpness-review 40
 
 echo "=== Done ==="
-
-cd "$CUR"
