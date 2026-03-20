@@ -112,7 +112,7 @@ def main():
         except ValueError:
             rel_path = str(img_path)
 
-        new_scores = score_image(img_path, model, preprocess, text_features, labels, device)
+        new_scores: None|dict[str,float] = score_image(img_path, model, preprocess, text_features, labels, device)
         if new_scores is None:
             continue
 
@@ -123,7 +123,7 @@ def main():
             entry["top_score"]  = entry["scores"][entry["top_bucket"]]
             results.append(entry)
         else:
-            top_bucket = max(new_scores, key=new_scores.get)
+            top_bucket = max(new_scores, key=lambda k: new_scores.get(k) or 0 if new_scores else 0)
             results.append({
                 "path":       rel_path,
                 "subreddit":  img_path.parent.name,
