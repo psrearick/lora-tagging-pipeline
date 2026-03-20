@@ -29,7 +29,7 @@ function filter() {
 }
 
 function crop() {
-    poetry run python "$DIR/smart_crop.py" "$DEST/sorted/accepted" "$CROP"
+    poetry run python "$DIR/smart_crop.py" "$DEST/filtered/accepted" "$CROP"
 }
 
 function dedupe() {
@@ -37,11 +37,11 @@ function dedupe() {
 }
 
 function clip() {
-    poetry run python "$DIR/clip_label.py" "$CROP" "$LABELS"
+    poetry run python "$DIR/clip_label.py" "$CROP" "$LABELS" --config "$LORA_CONFIG"
 }
 
 function generate() {
-    poetry run python "$DIR/generate_data.py" "$LABELS" "$DEST/data.json"
+    poetry run python "$DIR/generate_data.py" "$LABELS" "$DEST/data.json" --config "$LORA_CONFIG"
 }
 
 function open_gallery() {
@@ -53,22 +53,16 @@ function stop() {
 }
 
 function start() {
-    "$DIR/start_server.sh"
+    "$DIR/start_server.sh" "$DEST"
 }
 
 function review() {
     start
-    wait 2
     open_gallery
 }
 
 function export_training() {
-    if [[ -n "$LORA_CONFIG" ]]
-    then
-        poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
-    else
-        poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora
-    fi
+    poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
 }
 
 function update_gallery() {
@@ -82,6 +76,7 @@ function all() {
     dedupe
     clip
     generate
+    update_gallery
     review
 }
 

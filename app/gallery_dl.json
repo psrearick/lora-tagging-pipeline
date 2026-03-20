@@ -3,8 +3,12 @@
         "reddit": {
             "parent-skip": true,
             "directory": ["{subreddit}"],
+            "image-filter": "score > 100 and width >= 1024 and height >= 1024",
+            "metadata": true,
+            "recursion": 0,
             "parent-directory": true,
-            "parent-metadata": "_reddit"
+            "parent-metadata": "_reddit",
+            "filename": "{score:>06}_{id}.{extension}"
         },
         "imgur": {
             "directory": {

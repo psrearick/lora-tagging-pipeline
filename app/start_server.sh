@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DEST="$1"
+
 PID_FILE=/tmp/http_server.pid
 
 if [ -f "$PID_FILE" ]; then
@@ -13,6 +15,7 @@ if [ -f "$PID_FILE" ]; then
     fi
 fi
 
-cd ~/dataset && python3 -m http.server 8000 &
+cd "$DEST"
+python3 -m http.server 8000 &
 echo $! > "$PID_FILE"
 echo "Server started (PID $(cat $PID_FILE))"
