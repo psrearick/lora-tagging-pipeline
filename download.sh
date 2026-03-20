@@ -15,7 +15,8 @@ for sub in "${SUBREDDITS[@]}"; do
 
     gallery-dl \
         --download-archive "$ARCHIVE" \
-        -d "$DEST" \
+        --directory ["{subreddit}"] \
+        -d "$DEST/raw" \
         --range "$START-$END" \
         --chapter-range "$START-$END" \
         --filter "extension in ('jpg', 'jpeg', 'png', 'webp')" \
@@ -24,6 +25,6 @@ done
 
 echo ""
 echo "All downloads complete."
-echo "Archive: $archive"
+echo "Archive: $ARCHIVE"
 
 cd "$CUR"
