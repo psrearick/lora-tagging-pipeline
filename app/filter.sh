@@ -4,7 +4,7 @@ dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))";
 DIR="${dirx%x}";
 cd "$DIR"
 
-source "$DIR/env.conf"
+source "$1"
 
 echo "=== Filtering dataset ==="
 

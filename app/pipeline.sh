@@ -1,20 +1,31 @@
 #!/bin/bash
 
-dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))";
-DIR="${dirx%x}";
+
+dirx="$(dirname -- $(readlink -fn -- "$0"; echo x))"
+DIR="${dirx%x}"
+
+CONFIG="$(echo $($DIR/get_env.sh "$@"))"
+
+if [[ ! -n "$CONFIG" ]]; then
+    echo "Config file not found"
+    exit 1
+fi
+
+shift;shift
+
 cd "$DIR"
 
-source "$DIR/env.conf"
+source "$CONFIG"
 
 CROP="$DEST/cropped"
 LABELS="$DEST/clip_labels.json"
 
 function download() {
-    "$DIR/download.sh"
+    "$DIR/download.sh" "$CONFIG"
 }
 
 function filter() {
-    "$DIR/filter.sh"
+    "$DIR/filter.sh" "$CONFIG"
 }
 
 function crop() {
