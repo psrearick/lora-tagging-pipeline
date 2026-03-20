@@ -39,8 +39,18 @@ function open_gallery() {
     open http://localhost:8000/gallery.html
 }
 
+function stop() {
+    "$CUR/stop_server.sh"
+}
+
+function start() {
+    "$CUR/start_server.sh"
+}
+
 function review() {
-    echo ""
+    start
+    wait 2
+    open
 }
 
 function export_training() {
@@ -59,11 +69,10 @@ function all() {
     clip
     generate
     review
-    export_training
 }
 
 function usage() {
-    echo "Usage: ./pipeline.sh [download|filter|crop|dedupe|clip|generate|review|export_training|all]"
+    echo "Usage: ./pipeline.sh [download|filter|crop|dedupe|clip|generate|review|export_training|start|stop|all]"
     exit 1
 }
 
@@ -100,6 +109,14 @@ case "$1" in
     export)
         shift
         export_training
+        ;;
+    start)
+        shift
+        start
+        ;;
+    stop)
+        shift
+        stop
         ;;
     all)
         shift
