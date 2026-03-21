@@ -41,7 +41,7 @@ function clip() {
 }
 
 function generate() {
-    poetry run python "$DIR/generate_data.py" "$LABELS" "$DATA_FILE" --config "$LORA_CONFIG" --update
+    poetry run python "$DIR/generate_data.py" "$LABELS" "$DATA_FILE" --config "$LORA_CONFIG" --update --reclip
 }
 
 function open_gallery() {
