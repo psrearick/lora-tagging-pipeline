@@ -3,7 +3,7 @@
         "reddit": {
             "parent-skip": true,
             "directory": ["{subreddit}"],
-            "image-filter": "score > 100 and width >= 1024 and height >= 1024",
+            "image-filter": "width >= 1024 and height >= 1024",
             "metadata": true,
             "recursion": 0,
             "parent-directory": true,

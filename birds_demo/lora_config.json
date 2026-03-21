@@ -1,0 +1,401 @@
+{
+    "project_name": "Bird Characteristic LoRAs",
+    "target_size": 1024,
+    "clip_threshold": 0.25,
+    "clip_model": "ViT-B-32",
+    "loras": {
+        "lora1_form": [
+            "body_size",
+            "wing_shape"
+        ],
+        "lora2_head": [
+            "crest",
+            "beak"
+        ],
+        "lora3_plumage": [
+            "plumage_pattern",
+            "primary_color"
+        ],
+        "lora4_tail": [
+            "tail"
+        ]
+    },
+    "axes": {
+        "body_size": {
+            "tags": {
+                "sz_tiny": {
+                    "description": "tiny bird the size of a hummingbird or wren, very small body",
+                    "synonyms": [
+                        "tiny bird",
+                        "hummingbird sized",
+                        "very small bird",
+                        "miniature bird"
+                    ]
+                },
+                "sz_small": {
+                    "description": "small bird the size of a sparrow or robin, compact body",
+                    "synonyms": [
+                        "small bird",
+                        "sparrow sized",
+                        "robin sized",
+                        "compact bird"
+                    ]
+                },
+                "sz_medium": {
+                    "description": "medium bird the size of a crow or pigeon, mid-sized body",
+                    "synonyms": [
+                        "medium bird",
+                        "crow sized",
+                        "pigeon sized"
+                    ]
+                },
+                "sz_large": {
+                    "description": "large bird the size of a hawk or eagle, big powerful body",
+                    "synonyms": [
+                        "large bird",
+                        "hawk sized",
+                        "eagle sized",
+                        "big bird"
+                    ]
+                },
+                "sz_verylarge": {
+                    "description": "very large bird the size of a heron or pelican, tall long-legged or heavy-bodied",
+                    "synonyms": [
+                        "very large bird",
+                        "heron sized",
+                        "pelican sized",
+                        "great blue heron"
+                    ]
+                }
+            }
+        },
+        "wing_shape": {
+            "tags": {
+                "wg_broad": {
+                    "description": "bird with broad wide rounded wings, wide wingspan relative to body",
+                    "synonyms": [
+                        "broad wings",
+                        "wide wings",
+                        "rounded wings",
+                        "broad rounded wings"
+                    ]
+                },
+                "wg_long_pointed": {
+                    "description": "bird with long narrow pointed wings, swept-back pointed wingtips like a falcon or swift",
+                    "synonyms": [
+                        "pointed wings",
+                        "narrow wings",
+                        "long pointed wings",
+                        "falcon wings",
+                        "swift wings"
+                    ]
+                },
+                "wg_short_rounded": {
+                    "description": "bird with short rounded wings, small wingspan close to the body",
+                    "synonyms": [
+                        "short wings",
+                        "small wings",
+                        "short rounded wings"
+                    ]
+                }
+            }
+        },
+        "crest": {
+            "tags": {
+                "cr_none": {
+                    "description": "bird with a smooth flat head and no crest or head plumes whatsoever",
+                    "synonyms": [
+                        "no crest",
+                        "smooth head",
+                        "flat head",
+                        "no head plumes"
+                    ]
+                },
+                "cr_small_tuft": {
+                    "description": "bird with a small subtle tuft or bump of feathers on top of the head",
+                    "synonyms": [
+                        "small crest",
+                        "small tuft",
+                        "slight crest",
+                        "feather tuft on head"
+                    ]
+                },
+                "cr_tall_pointed": {
+                    "description": "bird with a tall upright pointed crest on the head, like a cardinal or cockatiel",
+                    "synonyms": [
+                        "tall crest",
+                        "pointed crest",
+                        "upright crest",
+                        "cardinal crest",
+                        "cockatiel crest"
+                    ]
+                },
+                "cr_wide_fan": {
+                    "description": "bird with a wide fanned crest spread broadly across the top of the head, like a cockatoo or hoopoe",
+                    "synonyms": [
+                        "fan crest",
+                        "wide crest",
+                        "broad crest",
+                        "cockatoo crest",
+                        "hoopoe crest"
+                    ]
+                },
+                "cr_swept": {
+                    "description": "bird with a long swept-back crest angled rearward, like a blue jay or belted kingfisher",
+                    "synonyms": [
+                        "swept crest",
+                        "swept back crest",
+                        "blue jay crest",
+                        "angled crest"
+                    ]
+                }
+            }
+        },
+        "beak": {
+            "tags": {
+                "bk_short_conical": {
+                    "description": "bird with a short thick conical seed-cracking beak like a finch or sparrow",
+                    "synonyms": [
+                        "seed beak",
+                        "conical beak",
+                        "finch beak",
+                        "short thick beak",
+                        "sparrow beak"
+                    ]
+                },
+                "bk_hooked": {
+                    "description": "bird with a sharp hooked curved beak like a raptor, hawk, eagle, or parrot",
+                    "synonyms": [
+                        "hooked beak",
+                        "curved beak",
+                        "raptor beak",
+                        "hawk beak",
+                        "eagle beak",
+                        "parrot beak"
+                    ]
+                },
+                "bk_long_straight": {
+                    "description": "bird with a long straight pointed beak like a heron or kingfisher, for stabbing fish",
+                    "synonyms": [
+                        "long straight beak",
+                        "pointed beak",
+                        "heron beak",
+                        "kingfisher beak",
+                        "spear beak"
+                    ]
+                },
+                "bk_long_curved": {
+                    "description": "bird with a long downward-curving beak like a hummingbird, ibis, or curlew",
+                    "synonyms": [
+                        "long curved beak",
+                        "curved down beak",
+                        "hummingbird beak",
+                        "ibis beak",
+                        "decurved beak"
+                    ]
+                },
+                "bk_broad_flat": {
+                    "description": "bird with a wide broad flat spatula-shaped beak like a duck, spoonbill, or pelican",
+                    "synonyms": [
+                        "flat beak",
+                        "duck bill",
+                        "broad beak",
+                        "spatula beak",
+                        "spoonbill"
+                    ]
+                },
+                "bk_large_colorful": {
+                    "description": "bird with an oversized brightly colored beak like a toucan or puffin, beak is very large relative to head",
+                    "synonyms": [
+                        "toucan beak",
+                        "large beak",
+                        "colorful beak",
+                        "puffin beak",
+                        "oversized beak"
+                    ]
+                }
+            }
+        },
+        "plumage_pattern": {
+            "tags": {
+                "pt_solid": {
+                    "description": "bird with solid uniform single-color plumage across the body with no markings or patterns",
+                    "synonyms": [
+                        "solid color",
+                        "uniform plumage",
+                        "single color bird",
+                        "no markings"
+                    ]
+                },
+                "pt_spotted": {
+                    "description": "bird with spotted plumage, round or oval spots visible on feathers",
+                    "synonyms": [
+                        "spotted bird",
+                        "spotted plumage",
+                        "spots on feathers",
+                        "dotted plumage"
+                    ]
+                },
+                "pt_streaked": {
+                    "description": "bird with streaked plumage, thin lengthwise streaks or stripes running along feathers",
+                    "synonyms": [
+                        "streaked bird",
+                        "streaked plumage",
+                        "streaky feathers",
+                        "longitudinal stripes"
+                    ]
+                },
+                "pt_barred": {
+                    "description": "bird with barred plumage, horizontal bands or bars crossing the feathers perpendicularly",
+                    "synonyms": [
+                        "barred bird",
+                        "barred plumage",
+                        "horizontal bars",
+                        "banded feathers"
+                    ]
+                },
+                "pt_iridescent": {
+                    "description": "bird with iridescent plumage that shimmers and changes color in the light like a hummingbird or starling",
+                    "synonyms": [
+                        "iridescent bird",
+                        "iridescent feathers",
+                        "shimmering plumage",
+                        "metallic feathers",
+                        "color-shifting plumage"
+                    ]
+                },
+                "pt_pied": {
+                    "description": "bird with pied two-tone plumage, large distinct patches of two contrasting colors like black and white",
+                    "synonyms": [
+                        "pied bird",
+                        "two tone bird",
+                        "black and white bird",
+                        "patchwork plumage",
+                        "contrasting patches"
+                    ]
+                }
+            }
+        },
+        "primary_color": {
+            "tags": {
+                "pc_red": {
+                    "description": "bird with predominantly red or crimson plumage covering most of the body",
+                    "synonyms": [
+                        "red bird",
+                        "crimson bird",
+                        "red plumage",
+                        "scarlet bird"
+                    ]
+                },
+                "pc_blue": {
+                    "description": "bird with predominantly blue plumage covering most of the body",
+                    "synonyms": [
+                        "blue bird",
+                        "blue plumage",
+                        "cobalt bird",
+                        "azure bird"
+                    ]
+                },
+                "pc_green": {
+                    "description": "bird with predominantly green plumage covering most of the body",
+                    "synonyms": [
+                        "green bird",
+                        "green plumage",
+                        "emerald bird"
+                    ]
+                },
+                "pc_yellow": {
+                    "description": "bird with predominantly yellow or golden plumage covering most of the body",
+                    "synonyms": [
+                        "yellow bird",
+                        "golden bird",
+                        "yellow plumage"
+                    ]
+                },
+                "pc_orange": {
+                    "description": "bird with predominantly orange plumage covering most of the body",
+                    "synonyms": [
+                        "orange bird",
+                        "orange plumage"
+                    ]
+                },
+                "pc_black": {
+                    "description": "bird with predominantly black plumage covering most of the body",
+                    "synonyms": [
+                        "black bird",
+                        "black plumage",
+                        "all black bird"
+                    ]
+                },
+                "pc_white": {
+                    "description": "bird with predominantly white plumage covering most of the body",
+                    "synonyms": [
+                        "white bird",
+                        "white plumage",
+                        "all white bird"
+                    ]
+                },
+                "pc_brown": {
+                    "description": "bird with predominantly brown or earth-toned plumage covering most of the body",
+                    "synonyms": [
+                        "brown bird",
+                        "earth toned bird",
+                        "brown plumage",
+                        "tan bird"
+                    ]
+                }
+            }
+        },
+        "tail": {
+            "tags": {
+                "tl_short": {
+                    "description": "bird with a short stubby tail, tail is brief and close to the body",
+                    "synonyms": [
+                        "short tail",
+                        "stubby tail",
+                        "brief tail"
+                    ]
+                },
+                "tl_long_straight": {
+                    "description": "bird with a long straight tail extending well beyond the body, like a magpie or long-tailed tit",
+                    "synonyms": [
+                        "long tail",
+                        "long straight tail",
+                        "magpie tail",
+                        "extended tail"
+                    ]
+                },
+                "tl_forked": {
+                    "description": "bird with a forked or notched tail that splits into two points, like a swallow or kite",
+                    "synonyms": [
+                        "forked tail",
+                        "swallow tail",
+                        "split tail",
+                        "notched tail"
+                    ]
+                },
+                "tl_fan": {
+                    "description": "bird with a wide fan-shaped tail spread open broadly, like a turkey or peacock displaying",
+                    "synonyms": [
+                        "fan tail",
+                        "fanned tail",
+                        "spread tail",
+                        "turkey tail",
+                        "wide tail"
+                    ]
+                },
+                "tl_ornate": {
+                    "description": "bird with elaborate ornate decorative tail plumes, like a peacock, bird of paradise, or lyrebird",
+                    "synonyms": [
+                        "ornate tail",
+                        "decorative tail",
+                        "peacock tail",
+                        "tail plumes",
+                        "lyrebird tail",
+                        "bird of paradise tail"
+                    ]
+                }
+            }
+        }
+    }
+}
