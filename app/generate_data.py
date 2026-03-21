@@ -20,8 +20,8 @@ from config_loader import load_config
 def assign_auto_tags(scores: dict, cfg) -> list:
     tags = []
     for axis_tags in cfg.axis_groups.values():
-        group_scores = {t: scores.get(t, 0.0) for t in axis_tags}
-        best = max(group_scores, key=group_scores.get)
+        group_scores: dict[str, float] = {t: scores.get(t, 0.0) for t in axis_tags}
+        best = max(group_scores, key=lambda k: group_scores.get(k) or 0 if group_scores else 0)
         if group_scores[best] >= cfg.threshold:
             tags.append(best)
     return tags

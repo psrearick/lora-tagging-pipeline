@@ -13,10 +13,10 @@ HASH_SIZE   = 8
 MAX_HAMMING = 10   # images within this distance are considered near-duplicates
 
 
-def phash(img_path: Path) -> int:
+def phash(img_path: Path) -> int|None:
     try:
         img  = Image.open(img_path).convert('L').resize(
-            (HASH_SIZE * 4, HASH_SIZE * 4), Image.LANCZOS
+            (HASH_SIZE * 4, HASH_SIZE * 4), Image.LANCZOS # type: ignore
         )
         arr  = np.array(img, dtype=float)
         # DCT via cosine transform approximation — fast and dependency-free
