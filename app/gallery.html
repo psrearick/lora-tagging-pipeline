@@ -1120,11 +1120,37 @@
       }, 300);
     }
 
-    function exportData() {
+    async function exportData() {
       state.lastModified = Date.now();
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
+      const json = JSON.stringify(state, null, 2);
+
+      // File System Access API — shows a native save dialog
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: 'data.json',
+            types: [{
+              description: 'JSON file',
+              accept: { 'application/json': ['.json'] },
+            }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(json);
+          await writable.close();
+          showToast('Saved');
+          return;
+        } catch (e) {
+          // User hit cancel — don't fall through to download
+          if (e.name === 'AbortError') return;
+          // Any other error — fall through to download fallback
+          console.warn('showSaveFilePicker failed, falling back:', e);
+        }
+      }
+
+      // Fallback for browsers without File System Access API
+      const blob = new Blob([json], { type: 'application/json' });
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
       a.download = 'data.json';
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
