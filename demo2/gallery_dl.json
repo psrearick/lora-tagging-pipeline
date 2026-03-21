@@ -8,7 +8,10 @@
             "recursion": 0,
             "parent-directory": true,
             "parent-metadata": "_reddit",
-            "filename": "{score:>06}_{id}.{extension}"
+            "filename": "{score:>06}_{id}.{extension}",
+            "sleep": 2.0,
+            "sleep-request": 1.5,
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
         },
         "imgur": {
             "directory": {
@@ -18,6 +21,8 @@
     },
     "downloader": {
         "part": false,
-        "retries": 3
+        "retries": 5,
+        "timeout": 30.0,
+        "sleep": 5.0
     }
 }
