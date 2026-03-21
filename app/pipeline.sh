@@ -41,7 +41,7 @@ function clip() {
 }
 
 function generate() {
-    poetry run python "$DIR/generate_data.py" "$LABELS" "$DEST/data.json" --config "$LORA_CONFIG"
+    poetry run python "$DIR/generate_data.py" "$LABELS" "$DATA_FILE" --config "$LORA_CONFIG" --update
 }
 
 function open_gallery() {
@@ -81,7 +81,7 @@ function all() {
 }
 
 function usage() {
-    echo "Usage: ./pipeline.sh [download|filter|crop|dedupe|clip|generate|review|export_training|start|stop|all]"
+    echo "Usage: ./pipeline.sh [download|filter|crop|dedupe|clip|generate|review|export|update-gallery|start|stop|all]"
     exit 1
 }
 
