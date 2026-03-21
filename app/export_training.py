@@ -70,7 +70,7 @@ def main():
             skipped += 1
             continue
 
-        tags    = img.get("tags", [])
+        tags    = img.get("tags", []) + img.get("manual_tags", [])
         caption = cfg.make_caption(tags)
         stem    = src.stem
 

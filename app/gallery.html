@@ -535,6 +535,16 @@
       color: var(--rej)
     }
 
+    .tag-pill.manual {
+      background: rgba(255, 183, 77, .12);
+      border-color: rgba(255, 183, 77, .3);
+      color: #ffb74d
+    }
+
+    .tag-pill.manual .tag-rm {
+      color: rgba(255, 183, 77, .5)
+    }
+
     .add-tag-btn {
       background: none;
       border: 1px dashed var(--border2);
@@ -789,6 +799,29 @@
       color: var(--text3);
       font-weight: 600;
       letter-spacing: .06em
+    }
+
+    .td-manual-wrap {
+      padding: 6px 6px 4px;
+      border-top: 1px solid var(--border2);
+      margin-top: 4px
+    }
+
+    #td-manual-input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      color: var(--text1);
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 4px 7px;
+      box-sizing: border-box
+    }
+
+    #td-manual-input:focus {
+      outline: none;
+      border-color: #ffb74d
     }
 
     /* ─── LOADING / NO-DATA ─── */
@@ -1061,6 +1094,9 @@
         }
 
         state.lastModified = state.lastModified || 0;
+        for (const img of state.images || [])
+          if (!img.manual_tags) img.manual_tags = [];
+
         tagAxis = {};
         for (const [axis, tags] of Object.entries(state.axis_groups || {}))
           for (const t of tags) tagAxis[t] = axis;
@@ -1174,8 +1210,17 @@
 
     function addTag(id, tag) {
       const img = imgById(id);
-      if (!img || img.tags.includes(tag)) return;
-      img.tags.push(tag);
+      if (!img) return;
+      if (!img.manual_tags) img.manual_tags = [];
+      const isConfigTag = (state.all_tags || []).includes(tag);
+      if (isConfigTag) {
+        if (img.tags.includes(tag)) return;
+        img.tags.push(tag);
+      } else {
+        tag = tag.trim();
+        if (!tag || img.manual_tags.includes(tag)) return;
+        img.manual_tags.push(tag);
+      }
       saveLocal();
       rerenderCardTags(id);
       if (lbId === id) renderLbTags(img);
@@ -1185,6 +1230,15 @@
       const img = imgById(id);
       if (!img) return;
       img.tags = img.tags.filter(t => t !== tag);
+      saveLocal();
+      rerenderCardTags(id);
+      if (lbId === id) renderLbTags(img);
+    }
+
+    function removeManualTag(id, tag) {
+      const img = imgById(id);
+      if (!img) return;
+      img.manual_tags = (img.manual_tags || []).filter(t => t !== tag);
       saveLocal();
       rerenderCardTags(id);
       if (lbId === id) renderLbTags(img);
@@ -1390,6 +1444,9 @@
       const tagPills = img.tags.map(t =>
         `<span class="tag-pill"><span class="tag-name" title="${t}">${displayTag(t)}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
       ).join('');
+      const manualPills = (img.manual_tags || []).map(t =>
+        `<span class="tag-pill manual"><span class="tag-name" title="${t}">${t}</span><button class="tag-rm" onclick="removeManualTag(${img.id},'${t}')">×</button></span>`
+      ).join('');
       const topScores = Object.entries(img.clip_scores || {}).sort((a, b) => b[1] - a[1]).slice(0, 4);
       const scoreRows = topScores.map(([t, v]) =>
         `<div class="score-row"><span class="score-name">${t}</span><span class="score-val${v > .6 ? ' top' : ''}">${v.toFixed(3)}</span></div>`
@@ -1407,7 +1464,7 @@
         <button class="sbtn${img.status === 'unreviewed' ? ' active-unrev' : ''}" onclick="setStatus(${img.id},'unreviewed')">?</button>
         <button class="sbtn${img.status === 'rejected' ? ' active-rej' : ''}" onclick="setStatus(${img.id},'rejected')">✗</button>
       </div>
-      <div class="tags-area" id="tags-${img.id}">${tagPills}
+      <div class="tags-area" id="tags-${img.id}">${tagPills}${manualPills}
         <button class="add-tag-btn" onclick="openTagDropdown(${img.id},this)">+</button>
       </div>
       <button class="scores-toggle" onclick="this.nextElementSibling.classList.toggle('open')">▸ clip scores</button>
@@ -1433,7 +1490,10 @@
       const tagPills = img.tags.map(t =>
         `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${id},'${t}')">×</button></span>`
       ).join('');
-      el.innerHTML = tagPills + `<button class="add-tag-btn" onclick="openTagDropdown(${id},this)">+</button>`;
+      const manualPills = (img.manual_tags || []).map(t =>
+        `<span class="tag-pill manual"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeManualTag(${id},'${t}')">×</button></span>`
+      ).join('');
+      el.innerHTML = tagPills + manualPills + `<button class="add-tag-btn" onclick="openTagDropdown(${id},this)">+</button>`;
     }
 
     // ─── TAG DROPDOWN ─────────────────────────────────────────────────────────────
@@ -1458,7 +1518,23 @@
         html += `<div class="td-axis">${axis.toUpperCase()}</div>`;
         html += tags.map(t => `<div class="td-item" onclick="addTag(${imgId},'${t}');closeTagDropdown()" title="${t}">${displayTag(t)}</div>`).join('');
       }
+      html += `<div class="td-manual-wrap"><input id="td-manual-input" type="text" placeholder="custom tag…" /></div>`;
       dd.innerHTML = html;
+
+      const manualInput = document.getElementById('td-manual-input');
+      manualInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const val = manualInput.value.trim();
+          if (val) addTag(imgId, val);
+          closeTagDropdown();
+          e.stopPropagation();
+        } else if (e.key === 'Escape') {
+          closeTagDropdown();
+        } else {
+          e.stopPropagation(); // prevent keyboard shortcuts while typing
+        }
+      });
+      manualInput.addEventListener('click', e => e.stopPropagation());
 
       const rect = btn.getBoundingClientRect();
       dd.style.top = (rect.bottom + 4) + 'px';
@@ -1508,9 +1584,13 @@
 
     function renderLbTags(img) {
       const area = document.getElementById('lb-tags-area');
-      area.innerHTML = img.tags.map(t =>
+      const autoHtml = img.tags.map(t =>
         `<span class="tag-pill"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeTag(${img.id},'${t}')">×</button></span>`
       ).join('');
+      const manualHtml = (img.manual_tags || []).map(t =>
+        `<span class="tag-pill manual"><span class="tag-name">${t}</span><button class="tag-rm" onclick="removeManualTag(${img.id},'${t}')">×</button></span>`
+      ).join('');
+      area.innerHTML = autoHtml + manualHtml;
     }
 
     function lbSetStatus(status) { if (lbId !== null) setStatus(lbId, status); }

@@ -27,11 +27,6 @@ def assign_auto_tags(scores: dict, cfg) -> list:
     return tags
 
 
-def merge_tags(existing_tags: list, new_auto_tags: list, cfg) -> list:
-    manual   = [t for t in existing_tags if t not in cfg.all_tags]
-    return list(dict.fromkeys(new_auto_tags + manual))
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("clip_labels", type=Path)
@@ -76,6 +71,7 @@ def main():
         existing_paths = {img["path"] for img in data["images"]}
         updated = added = skipped = 0
 
+        all_tags_set = set(cfg.all_tags)
         for img in data["images"]:
             clip = clip_by_path.get(img["path"])
             if clip is None:
@@ -83,8 +79,12 @@ def main():
                 continue
             img["clip_scores"] = clip.get("scores", img.get("clip_scores", {}))
             if args.reclip or "tags" not in img:
-                new_auto   = assign_auto_tags(img["clip_scores"], cfg)
-                img["tags"] = merge_tags(img.get("tags", []), new_auto, cfg)
+                if img.get("status", "unreviewed") == "unreviewed":
+                    img["tags"] = assign_auto_tags(img["clip_scores"], cfg)
+                else:
+                    # For reviewed images, strip tags removed from config;
+                    # manual_tags are stored separately and always preserved
+                    img["tags"] = [t for t in img.get("tags", []) if t in all_tags_set]
                 updated += 1
 
         max_id = max((img["id"] for img in data["images"]), default=-1)
@@ -98,6 +98,7 @@ def main():
                 "source":      entry.get("source", "unknown"),
                 "clip_scores": entry.get("scores", {}),
                 "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
+                "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
             })
@@ -122,6 +123,7 @@ def main():
                 "source":      source,
                 "clip_scores": entry.get("scores", {}),
                 "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
+                "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
             })
