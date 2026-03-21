@@ -6,7 +6,8 @@ cd "$DIR"
 
 source "$1"
 
-for src in "${SOURCES[@]}"; do
+for i in "${!SOURCES[@]}"; do
+    src="${SOURCES[$i]}"
     echo "========================================="
     echo "Downloading: $src ($SORT)"
     echo "========================================="
@@ -22,6 +23,12 @@ for src in "${SOURCES[@]}"; do
         --chapter-range "$START-$END" \
         --filter "extension in ('jpg', 'jpeg', 'png', 'webp')" \
         "$url"
+
+    if [[ $i -lt $(( ${#SOURCES[@]} - 1 )) ]]; then
+        SLEEP_TIME=$(( 45 + RANDOM % 30 ))
+        echo "Sleeping ${SLEEP_TIME}s before next subreddit..."
+        sleep "$SLEEP_TIME"
+    fi
 done
 
 echo ""
