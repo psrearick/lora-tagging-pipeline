@@ -62,7 +62,7 @@ function review() {
 }
 
 function export_training() {
-    poetry run python "$DIR/export_training.py" "$DEST/training" --group-by-lora "$LORA_CONFIG"
+    poetry run python "$DIR/export_training.py" "$DATA_FILE" "$DEST" --config "$LORA_CONFIG" --group-by-lora
 }
 
 function update_gallery() {

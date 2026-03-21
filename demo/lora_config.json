@@ -269,6 +269,19 @@
                         "squatting",
                         "legs spread squatting"
                     ]
+                },
+                "pos_legs_spread": {
+                    "description": "person lying or sitting with legs spread wide apart open no hands touching genitals",
+                    "synonyms": [
+                        "legs spread",
+                        "legs spread wide",
+                        "legs spread apart",
+                        "spreading legs",
+                        "legs open",
+                        "legs open wide",
+                        "legs apart",
+                        "thighs spread apart"
+                    ]
                 }
             }
         },
@@ -305,6 +318,19 @@
                         "sex toy",
                         "vibrator",
                         "toy inserted"
+                    ]
+                },
+                "int_underwear": {
+                    "description": "underwear pulled aside to expose genitals while still worn on body partially visible",
+                    "synonyms": [
+                        "underwear pulled aside",
+                        "panties pulled aside",
+                        "underwear moved aside",
+                        "panties moved aside",
+                        "exposed through underwear",
+                        "exposed through panties",
+                        "underwear visible",
+                        "panties visible"
                     ]
                 }
             }
