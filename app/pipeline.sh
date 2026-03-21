@@ -81,7 +81,7 @@ function all() {
 }
 
 function usage() {
-    echo "Usage: ./pipeline.sh [download|filter|crop|dedupe|clip|generate|review|export|update-gallery|start|stop|all]"
+    echo "Usage: ./pipeline.sh --config [env.conf] [download|filter|crop|dedupe|clip|generate|review|export|update-gallery|start|stop|all]"
     exit 1
 }
 
