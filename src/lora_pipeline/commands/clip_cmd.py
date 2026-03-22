@@ -38,7 +38,7 @@ def run(cfg: PipelineConfig, tags: list[str] | None = None, update: bool = False
 
     print("Loading CLIP model...")
     model, preprocess, tokenizer, device = load_model(lora_cfg.clip_model)
-    labels, text_features = encode_texts(model, tokenizer, device, tag_descriptions)
+    labels, text_features = encode_texts(model, tokenizer, device, lora_cfg, tag_descriptions)
 
     images = [p for p in input_dir.rglob("*") if p.suffix.lower() in IMAGE_EXTS]
     print(f"Found {len(images)} images\n")

@@ -24,11 +24,12 @@ class Config:
     def __init__(self, raw: dict):
         self._raw = raw
 
-        self.project_name = raw.get("project_name", "lora_project")
-        self.target_size  = raw.get("target_size", 1024)
-        self.threshold    = raw.get("clip_threshold", 0.40)
-        self.clip_model   = raw.get("clip_model", "ViT-B-32")
-        self.loras        = raw.get("loras", {})
+        self.project_name    = raw.get("project_name", "lora_project")
+        self.target_size     = raw.get("target_size", 1024)
+        self.threshold       = raw.get("clip_threshold", 0.40)
+        self.clip_model      = raw.get("clip_model", "ViT-B-32")
+        self.prompt_template = raw.get("prompt_template", "{description}")
+        self.loras           = raw.get("loras", {})
 
         # Derived structures built once at load time
         self.axis_groups  = {}   # axis_name → [tag, ...]

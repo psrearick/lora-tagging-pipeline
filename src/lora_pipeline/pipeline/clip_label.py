@@ -37,14 +37,43 @@ def load_model(model_name: str):
     return model.to(device), preprocess, tokenizer, device
 
 
-def encode_texts(model, tokenizer, device, tag_descriptions: dict):
-    labels       = list(tag_descriptions.keys())
-    descriptions = list(tag_descriptions.values())
-    tokens = tokenizer(descriptions).to(device)
+def encode_texts(model, tokenizer, device, cfg, tag_descriptions: dict):
+    """Encode text prompts with prompt ensembling.
+
+    For each tag, builds a prompt list from its description plus all synonyms,
+    wraps each with cfg.prompt_template, encodes all prompts in one batched
+    forward pass, then averages and re-normalizes per tag. This is the prompt
+    ensembling technique from the original CLIP paper.
+    """
+    labels: list[str] = list(tag_descriptions.keys())
+
+    # Build per-tag prompt lists
+    tag_prompts: list[list[str]] = []
+    for tag in labels:
+        desc    = tag_descriptions[tag]
+        syns    = cfg.synonyms.get(tag, [])
+        raw     = [desc] + syns
+        prompts = [cfg.prompt_template.format(description=p) for p in raw]
+        tag_prompts.append(prompts)
+
+    # Flatten and encode all prompts in a single batched forward pass
+    flat_prompts = [p for prompts in tag_prompts for p in prompts]
+    tokens = tokenizer(flat_prompts).to(device)
     with torch.no_grad():
-        text_features = model.encode_text(tokens)
-        text_features /= text_features.norm(dim=-1, keepdim=True)
-    return labels, text_features
+        all_features = model.encode_text(tokens)
+        all_features /= all_features.norm(dim=-1, keepdim=True)
+
+    # Average embeddings per tag, then re-normalize
+    text_features = []
+    idx = 0
+    for prompts in tag_prompts:
+        n   = len(prompts)
+        avg = all_features[idx:idx + n].mean(dim=0)
+        avg = avg / avg.norm()
+        text_features.append(avg)
+        idx += n
+
+    return labels, torch.stack(text_features)
 
 
 def score_image(img_path, model, preprocess, text_features, labels, device):
@@ -100,7 +129,7 @@ def main():
 
     print("Loading CLIP model...")
     model, preprocess, tokenizer, device = load_model(cfg.clip_model)
-    labels, text_features = encode_texts(model, tokenizer, device, tag_descriptions)
+    labels, text_features = encode_texts(model, tokenizer, device, cfg, tag_descriptions)
 
     images = [p for p in input_dir.rglob("*") if p.suffix.lower() in IMAGE_EXTS]
     print(f"Found {len(images)} images\n")
