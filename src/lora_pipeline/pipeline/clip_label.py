@@ -21,7 +21,7 @@ import open_clip
 import argparse
 from PIL import Image
 from pathlib import Path
-from config_loader import load_config
+from lora_pipeline.config_loader import load_config
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 

@@ -1,7 +1,7 @@
 """
 Shared config loader. Every script imports this.
 Usage:
-    from config_loader import load_config
+    from lora_pipeline.config_loader import load_config
     cfg = load_config("lora_config.json")
 
     cfg.all_tags          → ["axis1_tag1", ...]

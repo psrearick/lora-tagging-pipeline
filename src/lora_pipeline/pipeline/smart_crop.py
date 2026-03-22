@@ -59,29 +59,20 @@ def smart_crop(img_path: Path, target: int) -> Image.Image:
     return Image.fromarray(cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB))
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Smart crop images to square")
-    parser.add_argument("input_dir",  type=Path)
-    parser.add_argument("output_dir", type=Path)
-    parser.add_argument("--target",   type=int, default=1024)
-    args = parser.parse_args()
-
-    input_dir  = args.input_dir.expanduser().resolve()
-    output_dir = args.output_dir.expanduser().resolve()
-
+def crop_directory(input_dir: Path, output_dir: Path, target: int) -> dict:
     images = [p for p in input_dir.rglob("*") if p.suffix.lower() in IMAGE_EXTS]
-    print(f"Found {len(images)} images → cropping to {args.target}×{args.target}")
+    print(f"Found {len(images)} images → cropping to {target}×{target}")
 
-    ok = skipped = errors = 0
+    ok = errors = 0
 
     for i, src in enumerate(images):
         # Preserve subfolder structure (source buckets)
-        rel     = src.relative_to(input_dir)
-        dest    = output_dir / rel.with_suffix(".png")
+        rel  = src.relative_to(input_dir)
+        dest = output_dir / rel.with_suffix(".png")
         dest.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            img = smart_crop(src, args.target)
+            img = smart_crop(src, target)
             img.save(dest, "PNG")
             ok += 1
         except Exception as e:
@@ -93,6 +84,19 @@ def main():
 
     print(f"\nDone — {ok} cropped, {errors} errors")
     print(f"Output: {output_dir}")
+    return {"ok": ok, "errors": errors}
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Smart crop images to square")
+    parser.add_argument("input_dir",  type=Path)
+    parser.add_argument("output_dir", type=Path)
+    parser.add_argument("--target",   type=int, default=1024)
+    args = parser.parse_args()
+
+    input_dir  = args.input_dir.expanduser().resolve()
+    output_dir = args.output_dir.expanduser().resolve()
+    crop_directory(input_dir, output_dir, args.target)
 
 
 if __name__ == "__main__":

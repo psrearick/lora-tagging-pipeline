@@ -13,7 +13,7 @@ import json
 import argparse
 from pathlib import Path
 from PIL import Image
-from config_loader import load_config
+from lora_pipeline.config_loader import load_config
 
 
 def main():

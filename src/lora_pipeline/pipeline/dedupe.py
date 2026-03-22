@@ -37,9 +37,8 @@ def hamming(a: int, b: int) -> int:
     return bin(a ^ b).count('1')
 
 
-if __name__ == '__main__':
-    accepted_dir = Path(sys.argv[1]).expanduser().resolve()
-    dupes_dir    = accepted_dir.parent / 'duplicates'
+def run(accepted_dir: Path) -> int:
+    dupes_dir = accepted_dir.parent / 'duplicates'
     dupes_dir.mkdir(exist_ok=True)
 
     print("Hashing images...")
@@ -68,3 +67,9 @@ if __name__ == '__main__':
                 removed.add(paths[j])
 
     print(f"Moved {len(removed)} near-duplicates to {dupes_dir}")
+    return len(removed)
+
+
+if __name__ == '__main__':
+    accepted_dir = Path(sys.argv[1]).expanduser().resolve()
+    run(accepted_dir)

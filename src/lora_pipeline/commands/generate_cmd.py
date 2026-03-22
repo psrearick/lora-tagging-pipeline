@@ -1,44 +1,16 @@
-#!/usr/bin/env python3
-"""
-Generate or update data.json. Reads all axis/tag config from lora_config.json.
-
-Usage:
-    python3 generate_data.py clip_labels.json data.json
-    python3 generate_data.py clip_labels.json data.json --update
-    python3 generate_data.py clip_labels.json data.json --update --reclip
-    python3 generate_data.py clip_labels.json data.json --config ~/dataset/lora_config.json
-"""
-
 import json
-import sys
-import argparse
-from pathlib import Path
 from collections import Counter
-from config_loader import load_config
+from pathlib import Path
+
+from lora_pipeline.config import PipelineConfig
+from lora_pipeline.config_loader import load_config
+from lora_pipeline.pipeline.generate_data import assign_auto_tags
 
 
-def assign_auto_tags(scores: dict, cfg) -> list:
-    tags = []
-    for axis_tags in cfg.axis_groups.values():
-        group_scores: dict[str, float] = {t: scores.get(t, 0.0) for t in axis_tags}
-        best = max(group_scores, key=lambda k: group_scores.get(k) or 0 if group_scores else 0)
-        if group_scores[best] >= cfg.threshold:
-            tags.append(best)
-    return tags
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("clip_labels", type=Path)
-    parser.add_argument("output",      type=Path)
-    parser.add_argument("--config",    type=Path, default="lora_config.json")
-    parser.add_argument("--update",    action="store_true")
-    parser.add_argument("--reclip",    action="store_true")
-    args = parser.parse_args()
-
-    cfg         = load_config(args.config)
-    labels_path = args.clip_labels.expanduser().resolve()
-    out_path    = args.output.expanduser().resolve()
+def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
+    lora_cfg    = load_config(cfg.lora_config)
+    labels_path = cfg.dest / "clip_labels.json"
+    out_path    = cfg.data_file
     base_dir    = out_path.parent
 
     with open(labels_path) as f:
@@ -53,15 +25,14 @@ def main():
             rel = str(abs_path)
         clip_by_path[rel] = entry
 
-    if args.update and out_path.exists():
+    if update and out_path.exists():
         print(f"Updating {out_path}...")
         with open(out_path) as f:
             data = json.load(f)
 
-        # Refresh schema fields from config
-        data["all_tags"]     = cfg.all_tags
-        data["axis_groups"]  = cfg.axis_groups
-        data["tag_synonyms"] = cfg.synonyms
+        data["all_tags"]     = lora_cfg.all_tags
+        data["axis_groups"]  = lora_cfg.axis_groups
+        data["tag_synonyms"] = lora_cfg.synonyms
 
         existing_sources = set(data.get("sources", []))
         for entry in clip_results:
@@ -71,19 +42,17 @@ def main():
         existing_paths = {img["path"] for img in data["images"]}
         updated = added = skipped = 0
 
-        all_tags_set = set(cfg.all_tags)
+        all_tags_set = set(lora_cfg.all_tags)
         for img in data["images"]:
             clip = clip_by_path.get(img["path"])
             if clip is None:
                 skipped += 1
                 continue
             img["clip_scores"] = clip.get("scores", img.get("clip_scores", {}))
-            if args.reclip or "tags" not in img:
+            if reclip or "tags" not in img:
                 if img.get("status", "unreviewed") == "unreviewed":
-                    img["tags"] = assign_auto_tags(img["clip_scores"], cfg)
+                    img["tags"] = assign_auto_tags(img["clip_scores"], lora_cfg)
                 else:
-                    # For reviewed images, strip tags removed from config;
-                    # manual_tags are stored separately and always preserved
                     img["tags"] = [t for t in img.get("tags", []) if t in all_tags_set]
                 updated += 1
 
@@ -97,7 +66,7 @@ def main():
                 "path":        rel_path,
                 "source":      entry.get("source", "unknown"),
                 "clip_scores": entry.get("scores", {}),
-                "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
+                "tags":        assign_auto_tags(entry.get("scores", {}), lora_cfg),
                 "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
@@ -122,16 +91,16 @@ def main():
                 "path":        rel_path,
                 "source":      source,
                 "clip_scores": entry.get("scores", {}),
-                "tags":        assign_auto_tags(entry.get("scores", {}), cfg),
+                "tags":        assign_auto_tags(entry.get("scores", {}), lora_cfg),
                 "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
             })
         data = {
             "version":      1,
-            "all_tags":     cfg.all_tags,
-            "axis_groups":  cfg.axis_groups,
-            "tag_synonyms": cfg.synonyms,
+            "all_tags":     lora_cfg.all_tags,
+            "axis_groups":  lora_cfg.axis_groups,
+            "tag_synonyms": lora_cfg.synonyms,
             "sources":      sorted(sources),
             "lastModified": 0,
             "images":       images,
@@ -144,13 +113,9 @@ def main():
     print(f"\nWrote {out_path}  ({len(data['images'])} images)")
 
     tag_counts = Counter(tag for img in data["images"] for tag in img["tags"])
-    for axis, axis_tags in cfg.axis_groups.items():
+    for axis, axis_tags in lora_cfg.axis_groups.items():
         print(f"\n  [{axis}]")
         for tag in axis_tags:
             n   = tag_counts.get(tag, 0)
             bar = "█" * (n // 5)
-            print(f"    {cfg.display_name(tag):30} ({tag})  {n:4}  {bar}")
-
-
-if __name__ == "__main__":
-    main()
+            print(f"    {lora_cfg.display_name(tag):30} ({tag})  {n:4}  {bar}")
