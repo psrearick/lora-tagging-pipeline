@@ -49,6 +49,9 @@ def run(cfg: PipelineConfig, group_by_lora: bool = True, status: list[str] | Non
         try:
             pil_img = Image.open(src).convert("RGB")
             for dest_dir in dest_dirs:
+                lora_name = dest_dir.name
+                if lora_name in img.get("excluded_from", []):
+                    continue
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 pil_img.save(dest_dir / f"{stem}.png", "PNG")
                 (dest_dir / f"{stem}.txt").write_text(caption, encoding="utf-8")

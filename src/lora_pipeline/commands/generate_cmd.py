@@ -55,6 +55,8 @@ def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
                 else:
                     img["tags"] = [t for t in img.get("tags", []) if t in all_tags_set]
                 updated += 1
+            if "excluded_from" not in img:
+                img["excluded_from"] = []
 
         max_id = max((img["id"] for img in data["images"]), default=-1)
         for rel_path, entry in clip_by_path.items():
@@ -70,6 +72,7 @@ def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
                 "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
+                "excluded_from": []
             })
             added += 1
 
