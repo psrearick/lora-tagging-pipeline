@@ -33,6 +33,7 @@ def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
         data["all_tags"]     = lora_cfg.all_tags
         data["axis_groups"]  = lora_cfg.axis_groups
         data["tag_synonyms"] = lora_cfg.synonyms
+        data["loras"]        = lora_cfg.loras
 
         existing_sources = set(data.get("sources", []))
         for entry in clip_results:
@@ -72,7 +73,6 @@ def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
                 "manual_tags": [],
                 "status":      "unreviewed",
                 "notes":       "",
-                "excluded_from": []
             })
             added += 1
 
@@ -107,6 +107,7 @@ def run(cfg: PipelineConfig, update: bool = True, reclip: bool = True) -> None:
             "sources":      sorted(sources),
             "lastModified": 0,
             "images":       images,
+            "loras":        cfg.loras,
         }
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
